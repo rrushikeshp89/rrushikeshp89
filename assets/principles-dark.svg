@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="250" viewBox="0 0 1200 250" role="img" aria-label="How I work: 01 show the why. 02 enforce it on the server. 03 prove it, then say what&#x27;s missing.">
+<title>How I work: 01 show the why. 02 enforce it on the server. 03 prove it, then say what&#x27;s missing.</title>
+<style>
+  .serif { font-family: 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; }
+  .mono { font-family: ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace; letter-spacing: .04em; }
+  .sans { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif; }
+  .grow { transform-box: fill-box; transform-origin: left center; animation: grow 1s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) { .grow { animation: none; } }
+</style>
+<rect x="1" y="1" width="1198" height="248" rx="18" fill="#141815" stroke="#283029"/>
+<text x="44.0" y="78" class="mono" font-size="14" fill="#7CC7A4" font-weight="600">01</text>
+<text x="44.0" y="116" class="serif" font-size="23" fill="#ECEAE4">Show the why</text>
+<text x="44.0" y="156" class="sans" font-size="17" fill="#A9A498">A score comes with its breakdown,</text>
+<text x="44.0" y="182" class="sans" font-size="17" fill="#A9A498">a verdict with its sources, and an</text>
+<text x="44.0" y="208" class="sans" font-size="17" fill="#A9A498">estimate is labelled as one.</text>
+<line x1="400.0" y1="40" x2="400.0" y2="210" stroke="#283029"/>
+<text x="444.0" y="78" class="mono" font-size="14" fill="#7CC7A4" font-weight="600">02</text>
+<text x="444.0" y="116" class="serif" font-size="23" fill="#ECEAE4">Enforce it on the server</text>
+<text x="444.0" y="156" class="sans" font-size="17" fill="#A9A498">Permissions, state machines and</text>
+<text x="444.0" y="182" class="sans" font-size="17" fill="#A9A498">money rules live in the server and</text>
+<text x="444.0" y="208" class="sans" font-size="17" fill="#A9A498">the database, never only the UI.</text>
+<line x1="800.0" y1="40" x2="800.0" y2="210" stroke="#283029"/>
+<text x="844.0" y="78" class="mono" font-size="14" fill="#7CC7A4" font-weight="600">03</text>
+<text x="844.0" y="116" class="serif" font-size="23" fill="#ECEAE4">Prove it, then say what&#x27;s missing</text>
+<text x="844.0" y="156" class="sans" font-size="17" fill="#A9A498">Unit, browser and accessibility</text>
+<text x="844.0" y="182" class="sans" font-size="17" fill="#A9A498">tests in both themes, and a plain</text>
+<text x="844.0" y="208" class="sans" font-size="17" fill="#A9A498">list of what isn&#x27;t built yet.</text>
+</svg>
