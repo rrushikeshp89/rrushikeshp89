@@ -38,9 +38,9 @@ I came to software through data science, and I still think like an analyst: **if
 <p align="center">
   <sub>
     <b>Try them live</b> &nbsp;·&nbsp;
-    <a href="https://grove-hrms.vercel.app">Grove</a> &nbsp;·&nbsp;
-    <a href="https://stockroom-erp.onrender.com">Stockroom</a> &nbsp;·&nbsp;
-    <a href="https://leadhub-9stj.onrender.com/inquiry">LeadHub inquiry form</a> &nbsp;·&nbsp;
+    <a href="https://hrms.fluentopsai.com">Grove</a> &nbsp;·&nbsp;
+    <a href="https://erp.fluentopsai.com">Stockroom</a> &nbsp;·&nbsp;
+    <a href="https://crm.fluentopsai.com/inquiry">LeadHub inquiry form</a> &nbsp;·&nbsp;
     <a href="https://hospital-readmission-shield-diabetes-mxh3cfy4tg5movmukaphtm.streamlit.app/">Readmission Shield</a>
   </sub>
 </p>
