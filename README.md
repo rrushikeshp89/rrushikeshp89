@@ -74,13 +74,6 @@ I came to software through data science, and I still think like an analyst: **if
 
 <br>
 
-## Along the way
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/timeline-dark.svg">
-  <img src="assets/timeline-light.svg" width="100%" alt="Along the way: Dec 2025 Readmission Shield, Mar 2026 Tessaract and StrategyRoom, Oct 2026 Stockroom and LeadHub, Nov 2026 Grove.">
-</picture>
-
 <br>
 
 <p align="center">
