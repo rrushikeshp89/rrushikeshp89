@@ -7,11 +7,12 @@ Fonts are subset to the glyphs each card uses and embedded, so the SVGs make no 
 requests. Every animation stops under prefers-reduced-motion.
 
     pip install fonttools brotli pillow
-    python3 scripts/build_cards.py --fonts DIR --shots DIR
+    python3 scripts/build_cards.py --fonts DIR --shots DIR --icons DIR
 
 --fonts: a folder holding outfit-latin-{400,700,800,900}-normal.woff2 and
          space-mono-latin-{400,700}-normal.woff2 (from @fontsource/outfit, @fontsource/space-mono)
 --shots: Motionfolio's docs/images folder (for the screenshot in the Motionfolio card)
+--icons: an unpacked simple-icons package (npm pack simple-icons; CC0), for the logo grid
 """
 
 from __future__ import annotations
@@ -23,6 +24,7 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 
 from fontTools import subset
+from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.ttLib import TTFont
 
 OUT = Path(__file__).resolve().parent.parent / "assets"
@@ -111,7 +113,7 @@ CSS = """
 .rise{transform-box:fill-box;animation:rise .9s cubic-bezier(.16,1,.3,1) both}
 .fade{animation:fade .8s ease-out both}
 .grow{transform-box:fill-box;transform-origin:left center;animation:grow 1.1s cubic-bezier(.16,1,.3,1) both}
-.beacon{transform-box:fill-box;transform-origin:center;animation:beacon 2.4s ease-out infinite}
+.beacon{transform-box:fill-box;transform-origin:center;animation:beacon 2.4s ease-out 3}
 .blink{animation:blink 1.1s steps(2,start) infinite}
 .marq{animation:marq 26s linear infinite}
 @keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
@@ -119,6 +121,14 @@ CSS = """
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes beacon{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(2.8)}}
 @keyframes blink{to{visibility:hidden}}
+.jelly{transform-box:fill-box;transform-origin:50% 100%;animation:jelly 1.2s cubic-bezier(.3,.7,.4,1) both}
+.show{animation:show .7s cubic-bezier(.22,1,.36,1) both}
+.lift{animation:lift 1s cubic-bezier(.22,1,.36,1) both}
+@keyframes jelly{0%{transform:translateY(112%) scale(.92,1.22)}
+42%{transform:translateY(-7%) scale(1.06,.9)}62%{transform:translateY(2.5%) scale(.97,1.05)}
+80%{transform:translateY(-1%) scale(1.015,.985)}100%{transform:none}}
+@keyframes show{from{opacity:0}to{opacity:1}}
+@keyframes lift{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 """
 REDUCED = "@media (prefers-reduced-motion:reduce){*{animation:none!important}}"
 
@@ -130,13 +140,17 @@ class Svg:
         self.used: dict[str, set[str]] = {k: set() for k in FONT_FILES}
         self.extra_css = ""
         self.defs: list[str] = []
+        self.paths = False          # draw text as glyph outlines instead of <text>
+        self.glyphs: set[str] = set()
 
     def add(self, s: str) -> None:
         self.parts.append(s)
 
     def text(self, x, y, s, font="O4", size=16, fill=None, anchor="start", ls=0.0,
-             cls="", style="", fit=None, extra=""):
+             cls="", style="", fit=None, extra="", per_glyph=None):
         fill = fill or self.t["ink"]
+        if self.paths:
+            return self.outline(x, y, s, font, size, fill, anchor, ls, cls, style, per_glyph)
         self.used[font].update(s)
         a = f' text-anchor="{anchor}"' if anchor != "start" else ""
         l = f' letter-spacing="{ls * size:.2f}"' if ls else ""
@@ -146,6 +160,43 @@ class Svg:
         self.add(f'<text x="{x:.1f}" y="{y:.1f}" font-family="{font}, {FALLBACK[font]}" '
                  f'font-weight="{WEIGHT[font]}" font-size="{size}" fill="{fill}"{a}{l}{c}{st}{tl}{extra}>'
                  f"{escape(s)}</text>")
+
+    def glyph_id(self, font: str, ch: str) -> str:
+        f = FONTS[font]
+        name = f.getBestCmap().get(ord(ch))
+        gid = f"{font}-{name}"
+        if gid not in self.glyphs:
+            self.glyphs.add(gid)
+            pen = SVGPathPen(f.getGlyphSet(), ntos=lambda v: f"{round(v)}")
+            f.getGlyphSet()[name].draw(pen)
+            self.defs.append(f'<path id="{gid}" d="{pen.getCommands()}"/>')
+        return gid
+
+    def outline(self, x, y, s, font, size, fill, anchor, ls, cls, style, per_glyph):
+        """Text as <use> references to glyph paths: no font loading, no pixel snapping,
+        so it can move smoothly. per_glyph=(class, first_delay, step) animates each letter."""
+        f = FONTS[font]
+        k = size / f["head"].unitsPerEm
+        cmap, hmtx = f.getBestCmap(), f["hmtx"]
+        width = measure(s, font, size, ls)
+        x0 = x - (width / 2 if anchor == "middle" else width if anchor == "end" else 0)
+        c = f' class="{cls}"' if cls else ""
+        st = f' style="{style}"' if style else ""
+        out = [f'<g fill="{fill}"{c}{st}>']
+        cx, n = x0, 0
+        for ch in s:
+            name = cmap.get(ord(ch))
+            adv = hmtx[name][0] * k + ls * size
+            if ch != " ":
+                use = (f'<use xlink:href="#{self.glyph_id(font, ch)}" '
+                       f'transform="translate({cx:.2f} {y:.2f}) scale({k:.5f} {-k:.5f})"/>')
+                if per_glyph:
+                    pc, d0, step = per_glyph
+                    use = f'<g class="{pc}" style="animation-delay:{d0 + n * step:.3f}s">{use}</g>'
+                    n += 1
+                out.append(use)
+            cx += adv
+        self.add("".join(out) + "</g>")
 
     def para(self, x, y, s, font, size, width, lh, fill=None, cls="", style=""):
         lines = wrap(s, font, size, width)
@@ -249,6 +300,7 @@ def dot_grid(s: Svg, x, y, w, h, gap=22):
 
 def header(s: Svg, t: dict):
     W, H = s.w, s.h
+    s.paths = True
     s.box(3, 3, W - 14, H - 14, r=26, fill=t["paper"], off=8)
     s.add(f'<clipPath id="hc"><rect x="5" y="5" width="{W - 18}" height="{H - 18}" rx="24"/></clipPath>')
     s.add('<g clip-path="url(#hc)">')
@@ -256,22 +308,25 @@ def header(s: Svg, t: dict):
     s.add("</g>")
 
     s.kicker(56, 70, "SOFTWARE DEVELOPER · BENGALURU, INDIA · @RRUSHIKESHP89")
-    nw = measure("RUSHIKESH", "O9", 116)
-    s.text(50, 186, "RUSHIKESH", "O9", 116, t["ink"], cls="rise", fit=nw, ls=-0.01)
-    pw = measure("PANCHAL", "O9", 116)
-    s.text(50, 290, "PANCHAL", "O9", 116, t["accent"], cls="rise", fit=pw, ls=-0.01,
-           style="animation-delay:.12s")
+    # each letter springs up out of its own line, like jelly settling
+    s.add(f'<clipPath id="l1"><rect x="0" y="0" width="{W}" height="190"/></clipPath>'
+          f'<clipPath id="l2"><rect x="0" y="190" width="{W}" height="104"/></clipPath>')
+    s.add('<g clip-path="url(#l1)">')
+    s.text(50, 186, "RUSHIKESH", "O9", 116, t["ink"], ls=-0.01, per_glyph=("jelly", 0.05, 0.045))
+    s.add('</g><g clip-path="url(#l2)">')
+    s.text(50, 290, "PANCHAL", "O9", 116, t["accent"], ls=-0.01, per_glyph=("jelly", 0.3, 0.045))
+    s.add("</g>")
     s.add(f'<rect x="56" y="318" width="640" height="2.5" fill="{t["rule"]}" class="grow" '
-          f'style="animation-delay:.35s"/>')
-    s.text(56, 352, "I build software that can explain itself.", "O7", 22, t["ink"], cls="fade",
-           style="animation-delay:.45s")
+          f'style="animation-delay:.55s"/>')
+    s.text(56, 352, "I build software that can explain itself.", "O7", 22, t["ink"], cls="show",
+           style="animation-delay:.7s")
     s.text(56, 382, "Full-stack TypeScript · server-side access control · explainable AI",
-           "O4", 18, t["muted"], cls="fade", style="animation-delay:.55s")
+           "O4", 18, t["muted"], cls="show", style="animation-delay:.8s")
 
     # right: a tilted "whoami" inspector
     px, py, pw_, ph = 792, 64, 350, 300
-    s.add(f'<g transform="rotate(-2.2 {px + pw_ / 2} {py + ph / 2})"><g class="fade" '
-          f'style="animation-delay:.25s">')
+    s.add(f'<g transform="rotate(-2.2 {px + pw_ / 2} {py + ph / 2})"><g class="lift" '
+          f'style="animation-delay:.45s">')
     s.box(px, py, pw_, ph, r=18, fill=t["card"], off=7)
     s.add(f'<line x1="{px}" y1="{py + 46}" x2="{px + pw_}" y2="{py + 46}" stroke="{t["rule"]}" stroke-width="2"/>')
     for i, c in enumerate([t["accent"], t["sand"], t["sage"]]):
@@ -649,6 +704,60 @@ def contact(s: Svg, t: dict):
           f'height="20" fill="{ink}" class="blink"/>')
 
 
+# ---------------------------------------------------------------------------- icon grid
+
+ICONS = [  # (simple-icons slug, label, brand colour)
+    ("typescript", "TypeScript", "#3178C6"), ("react", "React", "#61DAFB"),
+    ("nextdotjs", "Next.js", "#000000"), ("nodedotjs", "Node.js", "#5FA04E"),
+    ("express", "Express", "#000000"), ("python", "Python", "#3776AB"),
+    ("fastapi", "FastAPI", "#009688"), ("postgresql", "PostgreSQL", "#4169E1"),
+    ("sqlite", "SQLite", "#003B57"), ("prisma", "Prisma", "#2D3748"),
+    ("supabase", "Supabase", "#3FCF8E"), ("tailwindcss", "Tailwind", "#06B6D4"),
+    ("vite", "Vite", "#646CFF"), ("docker", "Docker", "#2496ED"),
+    ("githubactions", "Actions", "#2088FF"), ("vercel", "Vercel", "#000000"),
+    ("figma", "Figma", "#F24E1E"), ("git", "Git", "#F05032"),
+]
+ICON_PATHS: dict[str, str] = {}
+
+
+def load_icons(folder: Path) -> None:
+    import re
+    for slug, _, _ in ICONS:
+        svg = (folder / "icons" / f"{slug}.svg").read_text()
+        ICON_PATHS[slug] = re.search(r'<path d="([^"]+)"', svg).group(1)
+
+
+def _lum(hexc: str) -> float:
+    r, g, b = (int(hexc[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    f = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+
+
+def contrast(a: str, b: str) -> float:
+    la, lb = sorted((_lum(a), _lum(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def icons(s: Svg, t: dict):
+    """Stack logos in the card style: one flat SVG with a viewBox, so it scales on every
+    screen (the external skill-icons strip showed one giant icon in the GitHub app)."""
+    per_row, slot = 9, (s.w - 14) / 9
+    tile, glyph = 100, 50
+    for i, (slug, label, colour) in enumerate(ICONS):
+        row, col = divmod(i, per_row)
+        cx = 3 + col * slot + slot / 2
+        y = 3 + row * 168
+        x = cx - tile / 2
+        c = colour if contrast(colour, t["card"]) >= 2.6 else t["ink"]
+        s.add(f'<g class="show" style="animation-delay:{i * 0.03:.2f}s">')
+        s.box(x, y, tile, tile, r=18, fill=t["card"], sw=2.2, off=5)
+        k = glyph / 24
+        s.add(f'<path d="{ICON_PATHS[slug]}" fill="{c}" '
+              f'transform="translate({cx - glyph / 2:.1f} {y + (tile - glyph) / 2:.1f}) scale({k:.4f})"/>')
+        s.text(cx, y + tile + 32, label.upper(), "M7", 14, t["ink"], anchor="middle", ls=0.06)
+        s.add("</g>")
+
+
 # ---------------------------------------------------------------------------- link buttons
 
 def i_sparkle(s, cx, cy, c):
@@ -719,8 +828,10 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--fonts", required=True, type=Path)
     ap.add_argument("--shots", required=True, type=Path)
+    ap.add_argument("--icons", required=True, type=Path)
     args = ap.parse_args()
     load_fonts(args.fonts)
+    load_icons(args.icons)
 
     from PIL import Image
     im = Image.open(args.shots / "desktop-hero.png").convert("RGB").resize((994, 621), Image.LANCZOS)
@@ -816,6 +927,7 @@ def main() -> None:
          "AI and data science: Claude API, Gemini, XGBoost, SHAP, scikit-learn, Sentence-Transformers, "
          "Power BI. Testing and delivery: Vitest, Playwright, axe-core, Lighthouse CI, Docker, GitHub "
          "Actions, Vercel, Render.", 1200, 444)
+    save("icons", icons, "Stack logos: " + ", ".join(lab for _, lab, _ in ICONS) + ".", 1200, 330)
     for name, label, tile, ic, icon, chip in BUTTONS:
         save(f"btn-{name}", lambda s, t, a=(label, tile, ic, icon, chip): button(s, t, *a),
              label, button_width(label, chip), 48)
