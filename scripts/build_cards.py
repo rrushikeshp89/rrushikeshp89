@@ -212,6 +212,8 @@ class Svg:
             sub.subset(font)
             buf = io.BytesIO()
             font.flavor = "woff2"
+            font.recalcTimestamp = False  # same input, same bytes: no churn on rebuilds
+            font["head"].modified = font["head"].created
             font.save(buf)
             b64 = base64.b64encode(buf.getvalue()).decode()
             out.append(f"@font-face{{font-family:{key};font-weight:{WEIGHT[key]};"
