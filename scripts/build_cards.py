@@ -639,10 +639,76 @@ def contact(s: Svg, t: dict):
     bx, by = 780, 74
     s.add(f'<rect x="{bx + 5}" y="{by + 5}" width="350" height="96" rx="16" fill="{ink}"/>')
     s.add(f'<rect x="{bx}" y="{by}" width="350" height="96" rx="16" fill="#FFFDF8" stroke="{ink}" stroke-width="2.5"/>')
-    s.text(bx + 24, by + 36, "WRITE TO ME", "M7", 12, "#B23F1C", ls=0.12)
+    s.text(bx + 24, by + 36, "WRITE TO ME · CLICK TO EMAIL", "M7", 12, "#B23F1C", ls=0.12)
+    s.add(f'<rect x="{bx + 300}" y="{by + 18}" width="30" height="30" rx="8" fill="#E05A36" stroke="{ink}" stroke-width="2"/>')
+    s.text(bx + 315, by + 38, "↗", "M7", 15, ink, anchor="middle")
     s.text(bx + 24, by + 70, "rrushikeshp8@gmail.com", "M7", 19, ink)
     s.add(f'<rect x="{bx + 24 + measure("rrushikeshp8@gmail.com", "M7", 19) + 4}" y="{by + 54}" width="10" '
           f'height="20" fill="{ink}" class="blink"/>')
+
+
+# ---------------------------------------------------------------------------- link buttons
+
+def i_sparkle(s, cx, cy, c):
+    s.add(f'<path d="M{cx} {cy - 9} Q{cx} {cy} {cx + 9} {cy} Q{cx} {cy} {cx} {cy + 9} '
+          f'Q{cx} {cy} {cx - 9} {cy} Q{cx} {cy} {cx} {cy - 9}Z" fill="{c}"/>')
+
+
+def i_globe(s, cx, cy, c):
+    s.add(f'<g fill="none" stroke="{c}" stroke-width="1.7"><circle cx="{cx}" cy="{cy}" r="8"/>'
+          f'<ellipse cx="{cx}" cy="{cy}" rx="3.4" ry="8"/><path d="M{cx - 8} {cy}h16"/></g>')
+
+
+def i_doc(s, cx, cy, c):
+    s.add(f'<g fill="none" stroke="{c}" stroke-width="1.7" stroke-linecap="round">'
+          f'<rect x="{cx - 6.5}" y="{cy - 8.5}" width="13" height="17" rx="2"/>'
+          f'<path d="M{cx - 3} {cy - 3.5}h6M{cx - 3} {cy}h6M{cx - 3} {cy + 3.5}h4"/></g>')
+
+
+def i_mail(s, cx, cy, c):
+    s.add(f'<g fill="none" stroke="{c}" stroke-width="1.7" stroke-linejoin="round">'
+          f'<rect x="{cx - 8.5}" y="{cy - 6.5}" width="17" height="13" rx="2"/>'
+          f'<path d="M{cx - 8} {cy - 5.5}l8 6l8 -6"/></g>')
+
+
+def i_word(word, size):
+    def draw(s, cx, cy, c):
+        s.text(cx, cy + size * 0.36, word, "O8", size, c, anchor="middle")
+    return draw
+
+
+BUTTONS = [
+    # name, label, tile colour, icon colour, icon, chip
+    ("motionfolio", "Motionfolio", "#E05A36", "#FFFFFF", i_sparkle, "NEW"),
+    ("portfolio", "Portfolio", "#1C1917", "#FAF6EE", i_globe, None),
+    ("resume", "Résumé", "#4F5E48", "#FFFFFF", i_doc, None),
+    ("linkedin", "LinkedIn", "#0A66C2", "#FFFFFF", i_word("in", 15), None),
+    ("email", "Email me", "#EA4335", "#FFFFFF", i_mail, None),
+    ("orcid", "ORCID", "#A6CE39", "#1C1917", i_word("iD", 13), None),
+]
+
+
+def button_width(label: str, chip) -> int:
+    w = 50 + measure(label, "O7", 16) + 12 + measure("↗", "M7", 13) + 16
+    if chip:
+        w += measure(chip, "M7", 10, 0.1) + 18 + 8
+    return int(round(w)) + 6
+
+
+def button(s: Svg, t: dict, label, tile, ic, icon, chip):
+    w = s.w - 6
+    s.box(2, 2, w, 40, r=12, fill=t["card"], sw=2, off=4)
+    s.add(f'<rect x="9" y="9" width="26" height="26" rx="7" fill="{tile}" stroke="{t["rule"]}" stroke-width="1.5"/>')
+    icon(s, 22, 22, ic)
+    x = 46
+    s.text(x, 27.5, label, "O7", 16, t["ink"])
+    x += measure(label, "O7", 16) + 10
+    if chip:
+        cw = measure(chip, "M7", 10, 0.1) + 14
+        s.add(f'<rect x="{x:.1f}" y="13" width="{cw:.1f}" height="18" rx="9" fill="{t["ink"]}"/>')
+        s.text(x + 7, 25.5, chip, "M7", 10, t["card"], ls=0.1)
+        x += cw + 8
+    s.text(x, 27, "↗", "M7", 13, t["accent_text"])
 
 
 # ---------------------------------------------------------------------------- main
@@ -748,7 +814,10 @@ def main() -> None:
          "AI and data science: Claude API, Gemini, XGBoost, SHAP, scikit-learn, Sentence-Transformers, "
          "Power BI. Testing and delivery: Vitest, Playwright, axe-core, Lighthouse CI, Docker, GitHub "
          "Actions, Vercel, Render.", 1200, 444)
-    save("contact", contact, "Open to Software Developer roles in Bengaluru. Let's build something that "
+    for name, label, tile, ic, icon, chip in BUTTONS:
+        save(f"btn-{name}", lambda s, t, a=(label, tile, ic, icon, chip): button(s, t, *a),
+             label, button_width(label, chip), 48)
+    save("contact", contact,"Open to Software Developer roles in Bengaluru. Let's build something that "
          "can explain itself. Write to me at rrushikeshp8@gmail.com.", 1200, 250)
 
 
