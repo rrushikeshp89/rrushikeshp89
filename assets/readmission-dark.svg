@@ -12,12 +12,8 @@
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes beacon{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(2.8)}}
 @keyframes blink{to{visibility:hidden}}
-.jelly{transform-box:fill-box;transform-origin:50% 100%;animation:jelly 1.2s cubic-bezier(.3,.7,.4,1) both}
 .show{animation:show .7s cubic-bezier(.22,1,.36,1) both}
 .lift{animation:lift 1s cubic-bezier(.22,1,.36,1) both}
-@keyframes jelly{0%{transform:translateY(112%) scale(.92,1.22)}
-42%{transform:translateY(-7%) scale(1.06,.9)}62%{transform:translateY(2.5%) scale(.97,1.05)}
-80%{transform:translateY(-1%) scale(1.015,.985)}100%{transform:none}}
 @keyframes show{from{opacity:0}to{opacity:1}}
 @keyframes lift{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes rsF0{0%{transform:scaleX(0)}4%{transform:scaleX(0)}10%{transform:scaleX(1.08)}13%{transform:scaleX(.97)}15%{transform:scaleX(1)}92%{transform:scaleX(1)}97%{transform:scaleX(0)}100%{transform:scaleX(0)}}.rs-f0{transform-box:fill-box;transform-origin:left center;animation:rsF0 7s cubic-bezier(.22,1,.36,1) infinite}@keyframes rsL0{0%{fill:#FAF6EE}4%{fill:#FAF6EE}5%{fill:#F2896A}16%{fill:#F2896A}19%{fill:#FAF6EE}100%{fill:#FAF6EE}}.rs-l0{animation:rsL0 7s ease-in-out infinite}@keyframes rsF1{0%{transform:scaleX(0)}18%{transform:scaleX(0)}24%{transform:scaleX(1.08)}27%{transform:scaleX(.97)}29%{transform:scaleX(1)}92%{transform:scaleX(1)}97%{transform:scaleX(0)}100%{transform:scaleX(0)}}.rs-f1{transform-box:fill-box;transform-origin:left center;animation:rsF1 7s cubic-bezier(.22,1,.36,1) infinite}@keyframes rsL1{0%{fill:#FAF6EE}18%{fill:#FAF6EE}19%{fill:#F2896A}30%{fill:#F2896A}33%{fill:#FAF6EE}100%{fill:#FAF6EE}}.rs-l1{animation:rsL1 7s ease-in-out infinite}@keyframes rsF2{0%{transform:scaleX(0)}32%{transform:scaleX(0)}38%{transform:scaleX(1.08)}41%{transform:scaleX(.97)}43%{transform:scaleX(1)}92%{transform:scaleX(1)}97%{transform:scaleX(0)}100%{transform:scaleX(0)}}.rs-f2{transform-box:fill-box;transform-origin:left center;animation:rsF2 7s cubic-bezier(.22,1,.36,1) infinite}@keyframes rsL2{0%{fill:#FAF6EE}32%{fill:#FAF6EE}33%{fill:#F2896A}44%{fill:#F2896A}47%{fill:#FAF6EE}100%{fill:#FAF6EE}}.rs-l2{animation:rsL2 7s ease-in-out infinite}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
