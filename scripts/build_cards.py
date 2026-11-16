@@ -570,8 +570,7 @@ def principles(s: Svg, t: dict):
     gap, w = 24, (s.w - 14 - 2 * 24) / 3
     for i, (title, body, foot) in enumerate(rules):
         x = 3 + i * (w + gap)
-        rot = [0, -1.2, 0][i]
-        s.add(f'<g transform="rotate({rot} {x + w / 2} 150)"><g class="fade" style="animation-delay:{i * .1:.1f}s">')
+        s.add(f'<g><g class="fade" style="animation-delay:{i * .1:.1f}s">')
         s.box(x, 3, w, 280, r=18, fill=t["card"], off=6)
         s.text(x + 26, 44, f"RULE // 0{i + 1}", "M7", 12.5, t["accent_text"], ls=0.1)
         lines = wrap(title, "O8", 25, w - 52)
