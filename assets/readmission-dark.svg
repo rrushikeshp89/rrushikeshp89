@@ -20,7 +20,7 @@
 80%{transform:translateY(-1%) scale(1.015,.985)}100%{transform:none}}
 @keyframes show{from{opacity:0}to{opacity:1}}
 @keyframes lift{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
+@keyframes rsF0{0%{transform:scaleX(0)}4%{transform:scaleX(0)}10%{transform:scaleX(1.08)}13%{transform:scaleX(.97)}15%{transform:scaleX(1)}92%{transform:scaleX(1)}97%{transform:scaleX(0)}100%{transform:scaleX(0)}}.rs-f0{transform-box:fill-box;transform-origin:left center;animation:rsF0 7s cubic-bezier(.22,1,.36,1) infinite}@keyframes rsL0{0%{fill:#FAF6EE}4%{fill:#FAF6EE}5%{fill:#F2896A}16%{fill:#F2896A}19%{fill:#FAF6EE}100%{fill:#FAF6EE}}.rs-l0{animation:rsL0 7s ease-in-out infinite}@keyframes rsF1{0%{transform:scaleX(0)}18%{transform:scaleX(0)}24%{transform:scaleX(1.08)}27%{transform:scaleX(.97)}29%{transform:scaleX(1)}92%{transform:scaleX(1)}97%{transform:scaleX(0)}100%{transform:scaleX(0)}}.rs-f1{transform-box:fill-box;transform-origin:left center;animation:rsF1 7s cubic-bezier(.22,1,.36,1) infinite}@keyframes rsL1{0%{fill:#FAF6EE}18%{fill:#FAF6EE}19%{fill:#F2896A}30%{fill:#F2896A}33%{fill:#FAF6EE}100%{fill:#FAF6EE}}.rs-l1{animation:rsL1 7s ease-in-out infinite}@keyframes rsF2{0%{transform:scaleX(0)}32%{transform:scaleX(0)}38%{transform:scaleX(1.08)}41%{transform:scaleX(.97)}43%{transform:scaleX(1)}92%{transform:scaleX(1)}97%{transform:scaleX(0)}100%{transform:scaleX(0)}}.rs-f2{transform-box:fill-box;transform-origin:left center;animation:rsF2 7s cubic-bezier(.22,1,.36,1) infinite}@keyframes rsL2{0%{fill:#FAF6EE}32%{fill:#FAF6EE}33%{fill:#F2896A}44%{fill:#F2896A}47%{fill:#FAF6EE}100%{fill:#FAF6EE}}.rs-l2{animation:rsL2 7s ease-in-out infinite}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
 
 <g><rect x="10.0" y="10.0" width="386.0" height="496.0" rx="24" fill="#E05A36"/><rect x="3.0" y="3.0" width="386.0" height="496.0" rx="24" fill="#24201D" stroke="#FAF6EE" stroke-width="2.5"/></g>
 <circle cx="35" cy="201.5" r="5" fill="#E86A47"/>
@@ -45,10 +45,10 @@
 <text x="30.0" y="472.0" font-family="M7, 'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="700" font-size="13" fill="#F2896A" letter-spacing="0.26">live demo  ↗</text>
 <rect x="30" y="30" width="326" height="132" rx="12" fill="#1C1917" stroke="#FAF6EE" stroke-width="1.8"/>
 <text x="48.0" y="56.0" font-family="M7, 'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="700" font-size="11" fill="#A8A29E" letter-spacing="1.10">WHY THIS PATIENT IS HIGH RISK</text>
-<text x="48.0" y="84.0" font-family="M4, 'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="400" font-size="12" fill="#FAF6EE">prior visits</text>
-<rect x="190" y="74" width="133.2" height="12" rx="3" fill="#E86A47" class="grow" style="animation-delay:0.2s"/>
-<text x="48.0" y="112.0" font-family="M4, 'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="400" font-size="12" fill="#FAF6EE">discharge to SNF</text>
-<rect x="190" y="102" width="91.8" height="12" rx="3" fill="#E86A47" class="grow" style="animation-delay:0.3s"/>
-<text x="48.0" y="140.0" font-family="M4, 'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="400" font-size="12" fill="#FAF6EE">age over 70</text>
-<rect x="190" y="130" width="62.2" height="12" rx="3" fill="#E86A47" class="grow" style="animation-delay:0.4s"/>
+<text x="48.0" y="84.0" font-family="M4, 'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="400" font-size="12" fill="#FAF6EE" class="rs-l0">prior visits</text>
+<g class="rs-f0"><rect x="190" y="74" width="133.2" height="12" rx="3" fill="#E86A47" class="grow" style="animation-delay:0.2s"/></g>
+<text x="48.0" y="112.0" font-family="M4, 'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="400" font-size="12" fill="#FAF6EE" class="rs-l1">discharge to SNF</text>
+<g class="rs-f1"><rect x="190" y="102" width="91.8" height="12" rx="3" fill="#E86A47" class="grow" style="animation-delay:0.3s"/></g>
+<text x="48.0" y="140.0" font-family="M4, 'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="400" font-size="12" fill="#FAF6EE" class="rs-l2">age over 70</text>
+<g class="rs-f2"><rect x="190" y="130" width="62.2" height="12" rx="3" fill="#E86A47" class="grow" style="animation-delay:0.4s"/></g>
 </svg>

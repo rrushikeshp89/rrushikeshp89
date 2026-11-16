@@ -583,38 +583,108 @@ def band(s: Svg, t: dict, title: str):
     s.text(48, 56, title, "M7", 11, t["faint"], ls=0.1)
 
 
+def kf(name: str, frames: list[tuple[float, str]]) -> str:
+    """@keyframes from (percent, declarations) pairs."""
+    return f"@keyframes {name}{{" + "".join(f"{p:g}%{{{d}}}" for p, d in frames) + "}"
+
+
 def v_rank(s: Svg, t: dict):
+    """Tessaract: each candidate's score builds up in four parts, one candidate after
+    another, and the score pops in when its bar completes."""
     band(s, t, "RANK BY FIT")
+    P = 6
     for i, (n, v) in enumerate([("Candidate A", .86), ("Candidate B", .79), ("Candidate C", .64)]):
         yy = 72 + i * 28
+        s0 = 4 + i * 18
+        steps = [(0, "transform:scaleX(0)"), (s0, "transform:scaleX(0)")]
+        for k in range(4):
+            steps += [(s0 + 4 * k + 3, f"transform:scaleX({(k + 1) / 4:g})"),
+                      (s0 + 4 * k + 4, f"transform:scaleX({(k + 1) / 4:g})")]
+        steps += [(92, "transform:scaleX(1)"), (97, "transform:scaleX(0)"), (100, "transform:scaleX(0)")]
+        s.extra_css += (kf(f"tsF{i}", steps) + f".ts-f{i}{{transform-box:fill-box;transform-origin:left center;"
+                        f"animation:tsF{i} {P}s cubic-bezier(.34,1.4,.64,1) infinite}}"
+                        + kf(f"tsN{i}", [(0, "opacity:0;transform:translateY(4px)"),
+                                         (s0 + 16, "opacity:0;transform:translateY(4px)"),
+                                         (s0 + 19, "opacity:1;transform:none"), (92, "opacity:1"),
+                                         (96, "opacity:0"), (100, "opacity:0")])
+                        + f".ts-n{i}{{animation:tsN{i} {P}s cubic-bezier(.22,1,.36,1) infinite}}")
         s.text(48, yy + 12, n, "M4", 12, t["ink"])
         s.add(f'<rect x="150" y="{yy}" width="150" height="16" rx="4" fill="{t["card"]}" stroke="{t["rule"]}" stroke-width="1.4"/>')
-        s.add(f'<rect x="151.5" y="{yy + 1.5}" width="{147 * v:.1f}" height="13" rx="3" '
-              f'fill="{t["accent"] if i == 0 else t["sage"]}" class="grow" style="animation-delay:{.2 + i * .1:.1f}s"/>')
-        s.text(338, yy + 12.5, f"{v:.2f}", "M7", 12, t["ink"], anchor="end")
+        s.add(f'<g class="ts-f{i}"><rect x="151.5" y="{yy + 1.5}" width="{147 * v:.1f}" height="13" rx="3" '
+              f'fill="{t["accent"] if i == 0 else t["sage"]}" class="grow" style="animation-delay:{.2 + i * .1:.1f}s"/></g>')
+        s.text(338, yy + 12.5, f"{v:.2f}", "M7", 12, t["ink"], anchor="end", cls=f"ts-n{i}")
 
 
 def v_agents(s: Svg, t: dict):
+    """StrategyRoom: the researcher works, hands off to the analyst, the verdict pops in
+    and the caption writes itself."""
     band(s, t, "TWO AGENTS, ONE REPORT")
+    P = 6.5
+    soft, acc, card, rule = t["accent_soft"], t["accent"], t["card"], t["rule"]
+    windows = [(2, 22), (24, 44)]
+    for i, (a0, a1) in enumerate(windows):
+        s.extra_css += (
+            kf(f"srB{i}", [(0, f"fill:{card};stroke:{rule}"), (a0, f"fill:{card};stroke:{rule}"),
+                           (a0 + 1.5, f"fill:{soft};stroke:{acc}"), (a1, f"fill:{soft};stroke:{acc}"),
+                           (a1 + 2, f"fill:{card};stroke:{rule}"), (100, f"fill:{card};stroke:{rule}")])
+            + f".sr-b{i}{{animation:srB{i} {P}s ease-in-out infinite}}"
+            + kf(f"srP{i}", [(0, "opacity:0;transform:scaleX(0)"), (a0, "opacity:1;transform:scaleX(0)"),
+                             (a1, "opacity:1;transform:scaleX(1)"), (a1 + 2, "opacity:0;transform:scaleX(1)"),
+                             (100, "opacity:0;transform:scaleX(1)")])
+            + f".sr-p{i}{{transform-box:fill-box;transform-origin:left center;"
+              f"animation:srP{i} {P}s cubic-bezier(.45,0,.55,1) infinite}}")
+    s.extra_css += (
+        kf("srPop", [(0, "opacity:.35;transform:scale(1)"), (44, "opacity:.35;transform:scale(1)"),
+                     (47, "opacity:1;transform:scale(1.14)"), (51, "transform:scale(.96)"),
+                     (54, "transform:scale(1)"), (93, "opacity:1"), (100, "opacity:.35")])
+        + f".sr-pop{{transform-box:fill-box;transform-origin:center;animation:srPop {P}s cubic-bezier(.34,1.56,.64,1) infinite}}"
+        + kf("srCap", [(0, "opacity:1;transform:scaleX(1)"), (52, "opacity:1;transform:scaleX(1)"),
+                       (70, "opacity:1;transform:scaleX(0)"), (71, "opacity:0;transform:scaleX(0)"),
+                       (100, "opacity:0;transform:scaleX(0)")])
+        + f".sr-cap{{transform-box:fill-box;transform-origin:right center;animation:srCap {P}s steps(24,end) infinite}}"
+    )
     for i, (a, b) in enumerate([("RESEARCHER", "web + sources"), ("ANALYST", "gemini")]):
         x = 48 + i * 112
-        s.add(f'<rect x="{x}" y="72" width="100" height="44" rx="8" fill="{t["card"]}" stroke="{t["rule"]}" stroke-width="1.6"/>')
+        s.add(f'<rect x="{x}" y="72" width="100" height="44" rx="8" fill="{card}" stroke="{rule}" '
+              f'stroke-width="1.6" class="sr-b{i}"/>')
         s.text(x + 10, 91, a, "M7", 10.5, t["ink"], ls=0.04)
         s.text(x + 10, 107, b, "M4", 10.5, t["faint"])
-        s.add(f'<path d="M{x + 101} 94 h10" stroke="{t["rule"]}" stroke-width="1.6"/>')
-    s.add(f'<rect x="272" y="72" width="66" height="44" rx="8" fill="{t["accent"]}" stroke="{t["rule"]}" stroke-width="1.6"/>')
+        s.add(f'<rect x="{x + 8}" y="111" width="84" height="2.5" rx="1.25" fill="{acc}" opacity="0" class="sr-p{i}"/>')
+        s.add(f'<path d="M{x + 101} 94 h10" stroke="{rule}" stroke-width="1.6"/>')
+    s.add('<g class="sr-pop">')
+    s.add(f'<rect x="272" y="72" width="66" height="44" rx="8" fill="{acc}" stroke="{rule}" stroke-width="1.6"/>')
     s.text(305, 91, "BUY", "M7", 10.5, "#1C1917", anchor="middle", ls=0.06)
     s.text(305, 107, "+ cites", "M4", 10.5, "#1C1917", anchor="middle")
-    s.text(48, 144, "reasoning chain, citations, confidence", "M4", 11, t["faint"])
+    s.add("</g>")
+    cap = "reasoning chain, citations, confidence"
+    s.text(48, 144, cap, "M4", 11, t["faint"])
+    # a paper-coloured cover that slides off the caption, typewriter-style
+    w = measure(cap, "M4", 11) + 4
+    s.add(f'<rect x="46" y="132" width="{w:.1f}" height="16" fill="{t["paper"]}" opacity="0" class="sr-cap"/>')
 
 
 def v_shap(s: Svg, t: dict):
+    """Readmission Shield: the SHAP reasons spring out one by one, each label lighting
+    up while its bar grows."""
     band(s, t, "WHY THIS PATIENT IS HIGH RISK")
+    P = 7
     for i, (lab, v) in enumerate([("prior visits", .9), ("discharge to SNF", .62), ("age over 70", .42)]):
         yy = 72 + i * 28
-        s.text(48, yy + 12, lab, "M4", 12, t["ink"])
-        s.add(f'<rect x="190" y="{yy + 2}" width="{148 * v:.1f}" height="12" rx="3" fill="{t["accent"]}" '
-              f'class="grow" style="animation-delay:{.2 + i * .1:.1f}s"/>')
+        s0 = 4 + i * 14
+        s.extra_css += (
+            kf(f"rsF{i}", [(0, "transform:scaleX(0)"), (s0, "transform:scaleX(0)"),
+                           (s0 + 6, "transform:scaleX(1.08)"), (s0 + 9, "transform:scaleX(.97)"),
+                           (s0 + 11, "transform:scaleX(1)"), (92, "transform:scaleX(1)"),
+                           (97, "transform:scaleX(0)"), (100, "transform:scaleX(0)")])
+            + f".rs-f{i}{{transform-box:fill-box;transform-origin:left center;"
+              f"animation:rsF{i} {P}s cubic-bezier(.22,1,.36,1) infinite}}"
+            + kf(f"rsL{i}", [(0, f"fill:{t['ink']}"), (s0, f"fill:{t['ink']}"),
+                             (s0 + 1, f"fill:{t['accent_text']}"), (s0 + 12, f"fill:{t['accent_text']}"),
+                             (s0 + 15, f"fill:{t['ink']}"), (100, f"fill:{t['ink']}")])
+            + f".rs-l{i}{{animation:rsL{i} {P}s ease-in-out infinite}}")
+        s.text(48, yy + 12, lab, "M4", 12, t["ink"], cls=f"rs-l{i}")
+        s.add(f'<g class="rs-f{i}"><rect x="190" y="{yy + 2}" width="{148 * v:.1f}" height="12" rx="3" '
+              f'fill="{t["accent"]}" class="grow" style="animation-delay:{.2 + i * .1:.1f}s"/></g>')
 
 
 def principles(s: Svg, t: dict):
