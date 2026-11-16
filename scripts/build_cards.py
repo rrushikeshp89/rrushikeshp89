@@ -121,16 +121,41 @@ CSS = """
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes beacon{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(2.8)}}
 @keyframes blink{to{visibility:hidden}}
-.jelly{transform-box:fill-box;transform-origin:50% 100%;animation:jelly 1.2s cubic-bezier(.3,.7,.4,1) both}
 .show{animation:show .7s cubic-bezier(.22,1,.36,1) both}
 .lift{animation:lift 1s cubic-bezier(.22,1,.36,1) both}
-@keyframes jelly{0%{transform:translateY(112%) scale(.92,1.22)}
-42%{transform:translateY(-7%) scale(1.06,.9)}62%{transform:translateY(2.5%) scale(.97,1.05)}
-80%{transform:translateY(-1%) scale(1.015,.985)}100%{transform:none}}
 @keyframes show{from{opacity:0}to{opacity:1}}
 @keyframes lift{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 """
 REDUCED = "@media (prefers-reduced-motion:reduce){*{animation:none!important}}"
+
+
+def spring_keyframes(name: str, dur: float = 1.25, samples: int = 48,
+                     zeta: float = 0.62, omega: float = 8.5, depth: float = 112.0) -> str:
+    """One continuous damped spring, sampled finely and played back linearly.
+
+    Chaining eased keyframes makes the letter brake to a near stop at every turn of the
+    bounce (each segment eases out on its own), which reads as jitter. Sampling a real
+    spring keeps speed continuous through rise, overshoot and settle. Squash and stretch
+    follow the spring on one smooth curve: stretched while it rises, squashed at the
+    overshoot, volume kept."""
+    import math
+    wd = omega * math.sqrt(1 - zeta * zeta)
+    t_peak = math.pi / wd  # when the overshoot tops out
+    frames = []
+    for k in range(samples + 1):
+        tt = dur * k / samples
+        x = 1 - math.exp(-zeta * omega * tt) * (math.cos(wd * tt) + zeta * omega / wd * math.sin(wd * tt))
+        # smooth in time: stretched (1.22) at the start, a soft squash pulse at the overshoot
+        sy = 1 + 0.22 * (1 - x) - 0.06 * math.exp(-((tt - t_peak) / 0.11) ** 2)
+        sx = 1 / math.sqrt(sy)
+        ty = (1 - x) * depth
+        if k == samples:
+            frames.append("100%{transform:none}")
+        else:
+            frames.append(f"{100 * k / samples:.3g}%{{transform:translateY({ty:.2f}%) "
+                          f"scale({sx:.4f},{sy:.4f})}}")
+    return (f".{name}{{transform-box:fill-box;transform-origin:50% 100%;"
+            f"animation:{name} {dur}s linear both}}@keyframes {name}{{{''.join(frames)}}}")
 
 
 class Svg:
@@ -309,24 +334,25 @@ def header(s: Svg, t: dict):
 
     s.kicker(56, 70, "SOFTWARE DEVELOPER · BENGALURU, INDIA · @RRUSHIKESHP89")
     # each letter springs up out of its own line, like jelly settling
+    s.extra_css += spring_keyframes("jelly")
     s.add(f'<clipPath id="l1"><rect x="0" y="0" width="{W}" height="190"/></clipPath>'
           f'<clipPath id="l2"><rect x="0" y="190" width="{W}" height="104"/></clipPath>')
     s.add('<g clip-path="url(#l1)">')
-    s.text(50, 186, "RUSHIKESH", "O9", 116, t["ink"], ls=-0.01, per_glyph=("jelly", 0.05, 0.045))
+    s.text(50, 186, "RUSHIKESH", "O9", 116, t["ink"], ls=-0.01, per_glyph=("jelly", 0.3, 0.045))
     s.add('</g><g clip-path="url(#l2)">')
-    s.text(50, 290, "PANCHAL", "O9", 116, t["accent"], ls=-0.01, per_glyph=("jelly", 0.3, 0.045))
+    s.text(50, 290, "PANCHAL", "O9", 116, t["accent"], ls=-0.01, per_glyph=("jelly", 0.55, 0.045))
     s.add("</g>")
     s.add(f'<rect x="56" y="318" width="640" height="2.5" fill="{t["rule"]}" class="grow" '
-          f'style="animation-delay:.55s"/>')
+          f'style="animation-delay:.8s"/>')
     s.text(56, 352, "I build software that can explain itself.", "O7", 22, t["ink"], cls="show",
-           style="animation-delay:.7s")
+           style="animation-delay:.95s")
     s.text(56, 382, "Full-stack TypeScript · server-side access control · explainable AI",
-           "O4", 18, t["muted"], cls="show", style="animation-delay:.8s")
+           "O4", 18, t["muted"], cls="show", style="animation-delay:1.05s")
 
     # right: a tilted "whoami" inspector
     px, py, pw_, ph = 792, 64, 350, 300
     s.add(f'<g transform="rotate(-2.2 {px + pw_ / 2} {py + ph / 2})"><g class="lift" '
-          f'style="animation-delay:.45s">')
+          f'style="animation-delay:.7s">')
     s.box(px, py, pw_, ph, r=18, fill=t["card"], off=7)
     s.add(f'<line x1="{px}" y1="{py + 46}" x2="{px + pw_}" y2="{py + 46}" stroke="{t["rule"]}" stroke-width="2"/>')
     for i, c in enumerate([t["accent"], t["sand"], t["sage"]]):
