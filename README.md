@@ -104,13 +104,6 @@ The LeadHub CRM holds a real team's data, so sign-in is by invitation; the publi
 ## Stack
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/stack-dark.svg">
-  <img src="assets/stack-light.svg" width="100%" alt="Stack. Languages: TypeScript, JavaScript, Python, SQL, HTML and CSS. Frontend: React, Next.js, Tailwind CSS, Radix UI, React Hook Form, Vite. Backend: Node.js, Express, Server Actions, REST APIs, Zod, Better Auth, JWT. Data: PostgreSQL, SQLite and Turso, Prisma, migrations, triggers. Security: RBAC, session auth, audit logging, rate limiting, CSP. AI and data science: Claude API, Gemini, XGBoost, SHAP, scikit-learn, Sentence-Transformers, Power BI. Testing and delivery: Vitest, Playwright, axe-core, Lighthouse CI, Docker, GitHub Actions, Vercel, Render.">
-</picture>
-
-<br>
-
-<picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/icons-dark.svg">
   <img src="assets/icons-light.svg" width="100%" alt="TypeScript, React, Next.js, Node.js, Express, Python, FastAPI, PostgreSQL, SQLite, Prisma, Supabase, Tailwind CSS, Vite, Docker, GitHub Actions, Vercel, Figma, Git">
 </picture>

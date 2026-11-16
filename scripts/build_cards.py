@@ -656,36 +656,6 @@ def experience(s: Svg, t: dict):
         yy += 34
 
 
-def stack(s: Svg, t: dict):
-    W, H = s.w, s.h
-    s.box(3, 3, W - 14, H - 14, r=24, fill=t["card"], off=7)
-    groups = [
-        ("LANGUAGES", ["TypeScript", "JavaScript", "Python", "SQL", "HTML/CSS"]),
-        ("FRONTEND", ["React", "Next.js (App Router)", "Tailwind CSS", "Radix UI", "React Hook Form", "Vite"]),
-        ("BACKEND", ["Node.js", "Express", "Server Actions", "REST APIs", "Zod", "Better Auth", "JWT"]),
-        ("DATA", ["PostgreSQL (Supabase)", "SQLite / Turso", "Prisma ORM", "Migrations", "Triggers"]),
-        ("SECURITY", ["RBAC", "Session auth", "Audit logging", "Rate limiting", "CSP"]),
-        ("AI & DATA SCIENCE", ["Claude API", "Gemini", "XGBoost", "SHAP", "scikit-learn", "Sentence-Transformers", "Power BI"]),
-        ("TESTING & DELIVERY", ["Vitest", "Playwright", "axe-core", "Lighthouse CI", "Docker", "GitHub Actions", "Vercel", "Render"]),
-    ]
-    y = 56
-    labw = 210
-    for i, (g, items) in enumerate(groups):
-        s.text(40, y + 18, g, "M7", 12, t["accent_text"], ls=0.1)
-        cx = 40 + labw
-        for it in items:
-            w = measure(it, "O4", 15) + 26
-            hot = it in ("TypeScript", "Next.js (App Router)", "PostgreSQL (Supabase)", "RBAC", "SHAP", "Playwright")
-            fill = t["accent_soft"] if hot else t["paper"]
-            s.add(f'<rect x="{cx:.1f}" y="{y}" width="{w:.1f}" height="30" rx="8" fill="{fill}" '
-                  f'stroke="{t["rule"]}" stroke-width="1.5" class="fade" style="animation-delay:{i * .05:.2f}s"/>')
-            s.text(cx + 13, y + 20.5, it, "O4", 15, t["ink"])
-            cx += w + 8
-        if i < len(groups) - 1:
-            s.add(f'<line x1="40" y1="{y + 44}" x2="{W - 54}" y2="{y + 44}" stroke="{t["hair"]}" stroke-dasharray="3 5"/>')
-        y += 56
-
-
 def contact(s: Svg, t: dict):
     W, H = s.w, s.h
     s.box(3, 3, W - 14, H - 14, r=24, fill=t["accent"], off=8)
@@ -920,13 +890,6 @@ def main() -> None:
          "Computer Science Engineering (Data Science), Garden City University, graduated July 2026, "
          "CGPA 8.53 of 10. Certifications: Google Gen AI Academy, McKinsey Forward Program, Google Data "
          "Analytics Professional Certificate.", 1200, 456)
-    save("stack", stack, "Stack. Languages: TypeScript, JavaScript, Python, SQL, HTML and CSS. "
-         "Frontend: React, Next.js, Tailwind CSS, Radix UI, React Hook Form, Vite. Backend: Node.js, "
-         "Express, Server Actions, REST APIs, Zod, Better Auth, JWT. Data: PostgreSQL, SQLite and Turso, "
-         "Prisma, migrations, triggers. Security: RBAC, session auth, audit logging, rate limiting, CSP. "
-         "AI and data science: Claude API, Gemini, XGBoost, SHAP, scikit-learn, Sentence-Transformers, "
-         "Power BI. Testing and delivery: Vitest, Playwright, axe-core, Lighthouse CI, Docker, GitHub "
-         "Actions, Vercel, Render.", 1200, 444)
     save("icons", icons, "Stack logos: " + ", ".join(lab for _, lab, _ in ICONS) + ".", 1200, 330)
     for name, label, tile, ic, icon, chip in BUTTONS:
         save(f"btn-{name}", lambda s, t, a=(label, tile, ic, icon, chip): button(s, t, *a),
