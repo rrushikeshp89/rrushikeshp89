@@ -490,33 +490,92 @@ def v_rbac(s: Svg, t: dict):
 
 
 def v_states(s: Svg, t: dict):
-    """Stockroom: the purchase-order state machine that lives in the database."""
-    x, y = 316, 150
+    """Stockroom: the purchase-order state machine that lives in the database.
+    A token walks the order through each state; RECEIVED commits, then a duplicate
+    receive bounces off with a 409. With no animation it shows the finished state."""
+    x, y, P = 316, 150, 7
     steps = ["DRAFT", "APPROVAL", "ORDERED", "RECEIVED"]
+    soft, acc, paper, rule, ink = t["accent_soft"], t["accent"], t["paper"], t["rule"], t["ink"]
+    s.extra_css += (
+        f"@keyframes poOn{{0%,12%{{fill:{soft};stroke:{acc}}}13.5%,100%{{fill:{paper};stroke:{rule}}}}}"
+        f".po{{animation:poOn {P}s ease-in-out infinite}}"
+        f"@keyframes poRecv{{0%,41%{{fill:{paper}}}42%,95%{{fill:{acc}}}100%{{fill:{paper}}}}}"
+        f".po-recv{{animation:poRecv {P}s ease-in-out infinite}}"
+        f"@keyframes poRecvText{{0%,41%{{fill:{ink}}}42%,95%{{fill:#1C1917}}100%{{fill:{ink}}}}}"
+        f".po-recv-text{{animation:poRecvText {P}s ease-in-out infinite}}"
+        "@keyframes poPop{0%,41%{transform:scale(1)}44.5%{transform:scale(1.05)}48%,100%{transform:scale(1)}}"
+        f".po-pop{{transform-box:fill-box;transform-origin:center;animation:poPop {P}s cubic-bezier(.34,1.56,.64,1) infinite}}"
+        "@keyframes poToken{0%{opacity:0;transform:translateY(0)}3%,10%{opacity:1;transform:translateY(0)}"
+        "14%,24%{transform:translateY(40px)}28%,38%{transform:translateY(80px)}"
+        "42%,90%{opacity:1;transform:translateY(120px)}95%,100%{opacity:0;transform:translateY(120px)}}"
+        f".po-token{{animation:poToken {P}s cubic-bezier(.65,0,.35,1) infinite}}"
+        "@keyframes poGhost{0%,52%{opacity:0;transform:translateY(80px)}54%{opacity:1;transform:translateY(80px)}"
+        "58%{transform:translateY(112px)}62%{transform:translateY(90px)}66%{transform:translateY(102px)}"
+        "70%{opacity:1;transform:translateY(96px)}76%,100%{opacity:0;transform:translateY(96px)}}"
+        f".po-ghost{{animation:poGhost {P}s cubic-bezier(.34,1.3,.64,1) infinite}}"
+        "@keyframes poErr{0%,57%{opacity:0;transform:none}58%{opacity:1}60%{transform:translateX(-3px)}"
+        "62%{transform:translateX(3px)}64%{transform:translateX(-2px)}66%{transform:translateX(1px)}"
+        "68%,90%{opacity:1;transform:none}94%,100%{opacity:0}}"
+        f".po-err{{animation:poErr {P}s ease-out infinite}}"
+    )
     s.text(x, y - 18, "PO LIFECYCLE · DB TRIGGER", "M7", 10.5, t["faint"], ls=0.08)
     for i, st in enumerate(steps):
         yy = y + i * 40
-        fill = t["accent"] if i == 3 else t["paper"]
-        col = "#1C1917" if i == 3 else t["ink"]
-        s.add(f'<rect x="{x}" y="{yy}" width="230" height="30" rx="8" fill="{fill}" stroke="{t["rule"]}" stroke-width="1.8"/>')
-        s.text(x + 14, yy + 20, f"0{i + 1}  {st}", "M7", 12, col, ls=0.06)
         if i < 3:
-            s.add(f'<path d="M{x + 115} {yy + 31} v8" stroke="{t["rule"]}" stroke-width="1.8"/>')
-    s.text(x + 216, y + 3 * 40 + 20, "409 if twice", "M4", 10.5, "#1C1917", anchor="end")
+            s.add(f'<rect x="{x}" y="{yy}" width="230" height="30" rx="8" fill="{paper}" stroke="{rule}" '
+                  f'stroke-width="1.8" class="po" style="animation-delay:{i * P * .14:.2f}s"/>')
+            s.text(x + 14, yy + 20, f"0{i + 1}  {st}", "M7", 12, ink, ls=0.06)
+            s.add(f'<path d="M{x + 115} {yy + 31} v8" stroke="{rule}" stroke-width="1.8"/>')
+        else:
+            s.add('<g class="po-pop">')
+            s.add(f'<rect x="{x}" y="{yy}" width="230" height="30" rx="8" fill="{acc}" stroke="{rule}" '
+                  f'stroke-width="1.8" class="po-recv"/>')
+            s.text(x + 14, yy + 20, f"0{i + 1}  {st}", "M7", 12, "#1C1917", ls=0.06, cls="po-recv-text")
+            s.text(x + 216, yy + 20, "409 if twice", "M4", 10.5, "#1C1917", anchor="end", cls="po-err")
+            s.add("</g>")
+    # the order token, and the duplicate receive that gets refused
+    tx, ty = x - 14, y + 15
+    s.add(f'<circle cx="{tx}" cy="{ty}" r="5" fill="{acc}" stroke="{rule}" stroke-width="1.5" '
+          f'class="po-token" opacity="0"/>')
+    s.add(f'<circle cx="{tx}" cy="{ty}" r="5" fill="{t["card"]}" stroke="{acc}" stroke-width="2" '
+          f'class="po-ghost" opacity="0"/>')
 
 
 def v_pipeline(s: Svg, t: dict):
-    """LeadHub: a weighted pipeline."""
-    x, y = 330, 140
+    """LeadHub: a weighted pipeline. A deal sweeps through each stage in turn, then the
+    Won bar grows and a +1 pops. With no animation it shows the static pipeline."""
+    x, y, P = 330, 140, 6
     s.text(x, y - 8, "WEIGHTED PIPELINE", "M7", 10.5, t["faint"], ls=0.08)
     vals = [(0.92, "New"), (0.74, "Contacted"), (0.58, "Discovery"), (0.40, "Proposal"), (0.24, "Won")]
+    s.extra_css += (
+        "@keyframes lhWon{0%,40%{transform:scaleX(1)}46%{transform:scaleX(1.75)}50%{transform:scaleX(1.55)}"
+        "54%,90%{transform:scaleX(1.62)}97%,100%{transform:scaleX(1)}}"
+        f".lh-won{{transform-box:fill-box;transform-origin:left center;animation:lhWon {P}s cubic-bezier(.34,1.56,.64,1) infinite}}"
+        "@keyframes lhPlus{0%,45%{opacity:0;transform:translateY(5px)}50%,84%{opacity:1;transform:none}"
+        "92%,100%{opacity:0;transform:translateY(-3px)}}"
+        f".lh-plus{{animation:lhPlus {P}s cubic-bezier(.22,1,.36,1) infinite}}"
+    )
     for i, (v, lab) in enumerate(vals):
         yy = y + 8 + i * 30
+        w = 207 * v
         s.add(f'<rect x="{x}" y="{yy}" width="210" height="18" rx="4" fill="{t["paper"]}" stroke="{t["rule"]}" stroke-width="1.5"/>')
         fill = t["accent"] if i == 4 else ("#B7C4AD" if t["name"] == "light" else t["sage"])
-        s.add(f'<rect x="{x + 1.5}" y="{yy + 1.5}" width="{207 * v:.1f}" height="15" rx="3" fill="{fill}" '
-              f'class="grow" style="animation-delay:{.2 + i * .1:.1f}s"/>')
-        s.text(x + 8, yy + 13.5, lab, "M7", 10, "#1C1917" if t["name"] == "light" or i == 4 else "#1C1917")
+        bar = (f'<rect x="{x + 1.5}" y="{yy + 1.5}" width="{w:.1f}" height="15" rx="3" fill="{fill}" '
+               f'class="grow" style="animation-delay:{.2 + i * .1:.1f}s"/>')
+        s.add(f'<g class="lh-won">{bar}</g>' if i == 4 else bar)
+        # a soft highlight that sweeps along this stage's fill
+        dist = max(w - 24, 8)
+        s.extra_css += (f"@keyframes lhSweep{i}{{0%{{opacity:0;transform:translateX(0)}}3%{{opacity:.6}}"
+                        f"13%{{opacity:.6;transform:translateX({dist:.0f}px)}}16%,100%{{opacity:0;"
+                        f"transform:translateX({dist:.0f}px)}}}}"
+                        f".lh-s{i}{{animation:lhSweep{i} {P}s cubic-bezier(.45,0,.55,1) infinite;"
+                        f"animation-delay:{i * .5:.1f}s}}")
+        s.add(f'<rect x="{x + 1.5}" y="{yy + 1.5}" width="24" height="15" rx="3" fill="#FFFFFF" '
+              f'opacity="0" class="lh-s{i}"/>')
+        s.text(x + 8, yy + 13.5, lab, "M7", 10, "#1C1917")
+        if i == 4:
+            s.text(x + 118, yy + 13.5, "+1 WON", "M7", 10, t["accent_text"], ls=0.06,
+                   cls="lh-plus", extra=' opacity="0"')
 
 
 def band(s: Svg, t: dict, title: str):
