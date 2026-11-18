@@ -742,11 +742,19 @@ def principles(s: Svg, t: dict):
     # stays lit, a trace line says what that step does, and the write commits at the end.
     # With no animation it shows the trace paused at step 03.
     py, ph = 316, 250
-    s.box(3, py, s.w - 14, ph, r=22, fill=t["panel"], stroke=t["rule"], off=7)
+    if t["name"] == "dark":   # the original ink panel
+        wp = dict(bg=t["panel"], text=t["panel_text"], muted=t["panel_muted"], base=t["panel_raised"],
+                  line=t["panel_line"], rail=t["panel_line"], done="#3A2620", trace=t["accent"],
+                  tok=t["panel_text"], ok="#6FCF9F", ok_text="#6FCF9F", check="#1C1917", cur_line=t["accent"])
+    else:                     # light: cream paper, ink borders, like every other light card
+        wp = dict(bg=t["paper"], text=t["ink"], muted=t["muted"], base=t["card"],
+                  line=t["rule"], rail="#D9CDBB", done=t["accent_soft"], trace=t["accent_text"],
+                  tok=t["ink"], ok="#0B6B4A", ok_text="#0B6B4A", check="#FFFFFF", cur_line=t["rule"])
+    s.box(3, py, s.w - 14, ph, r=22, fill=wp["bg"], stroke=t["rule"], off=7)
     s.add(f'<circle cx="38" cy="{py + 40}" r="5" fill="{t["accent"]}"/>')
-    s.text(52, py + 45, "GROVE HRMS WRITE PATH", "M7", 13, t["panel_text"], ls=0.1)
+    s.text(52, py + 45, "GROVE HRMS WRITE PATH", "M7", 13, wp["text"], ls=0.1)
     s.text(36, py + 76, "Every write in Grove HRMS takes this path, and it is traced on the server.",
-           "O4", 16, t["panel_muted"])
+           "O4", 16, wp["muted"])
     steps = [
         ("INTERFACE", "The browser submits a form. Nothing it sends is trusted."),
         ("SERVER ACTION", "A Next.js server action receives it and authenticates the session."),
@@ -759,7 +767,7 @@ def principles(s: Svg, t: dict):
     n, STATIC = len(steps), 2
     sw_, sg = (s.w - 14 - 64 - (n - 1) * 12) / n, 12
     P, win = 11.2, 12.5                      # loop length (s), one step's share of it (%)
-    base, line, acc, done = t["panel_raised"], t["panel_line"], t["accent"], "#3A2620"
+    base, line, acc, done = wp["base"], wp["line"], t["accent"], wp["done"]
     ease = "animation-timing-function:cubic-bezier(.45,0,.55,1)"
     xs = [35 + i * (sw_ + sg) for i in range(n)]
     cs = [x + sw_ / 2 for x in xs]
@@ -772,7 +780,7 @@ def principles(s: Svg, t: dict):
     css = []
     for i in range(n):
         a = i * win
-        st_base, st_cur, st_done = (f"fill:{base};stroke:{line}", f"fill:{acc};stroke:{acc}",
+        st_base, st_cur, st_done = (f"fill:{base};stroke:{line}", f"fill:{acc};stroke:{wp['cur_line']}",
                                     f"fill:{done};stroke:{acc}")
         css.append(f"@keyframes wpS{i}{{0%{{{st_base}}}{f(a)}%{{{st_base}}}{f(a + 1.2)}%{{{st_cur}}}"
                    f"{f(a + win)}%{{{st_cur}}}{f(a + win + 1.5)}%{{{st_done}}}96%{{{st_done}}}"
@@ -812,43 +820,43 @@ def principles(s: Svg, t: dict):
     s.extra_css += "".join(css)
 
     # rail under the steps
-    s.add(f'<line x1="{cs[0]:.1f}" y1="{railY}" x2="{cs[-1]:.1f}" y2="{railY}" stroke="{line}" '
+    s.add(f'<line x1="{cs[0]:.1f}" y1="{railY}" x2="{cs[-1]:.1f}" y2="{railY}" stroke="{wp["rail"]}" '
           f'stroke-width="2" stroke-linecap="round"/>')
     k2 = (cs[STATIC] - cs[0]) / L
     s.add(f'<rect x="{cs[0]:.1f}" y="{railY - 1.5}" width="{L:.1f}" height="3" rx="1.5" fill="{acc}" '
           f'class="wp-rail" transform="scale({k2:.4f} 1)"/>')  # origin: the class's left edge
     for i, (name, _) in enumerate(steps):
         x = xs[i]
-        fill, stroke = ((done, acc) if i < STATIC else (acc, acc) if i == STATIC else (base, line))
+        fill, stroke = ((done, acc) if i < STATIC else (acc, wp["cur_line"]) if i == STATIC else (base, line))
         if i < n - 1:
             s.add(f'<line x1="{x + sw_:.1f}" y1="{py + 131}" x2="{x + sw_ + sg:.1f}" y2="{py + 131}" '
                   f'stroke="{line}" stroke-width="2"/>')
-        s.add(f'<circle cx="{cs[i]:.1f}" cy="{railY}" r="3" fill="{line}"/>')
+        s.add(f'<circle cx="{cs[i]:.1f}" cy="{railY}" r="3" fill="{wp["rail"]}"/>')
         s.add(f'<g class="wp-p{i}">')
         s.add(f'<rect x="{x:.1f}" y="{py + 100}" width="{sw_:.1f}" height="62" rx="10" fill="{fill}" '
               f'stroke="{stroke}" stroke-width="1.5" class="wp-s{i}"/>')
-        s.text(cs[i], py + 125, f"0{i + 1}", "M7", 11, t["panel_text"], anchor="middle")
-        s.text(cs[i], py + 145, name, "M7", 11, t["panel_text"], anchor="middle", ls=0.06)
+        s.text(cs[i], py + 125, f"0{i + 1}", "M7", 11, wp["text"], anchor="middle")
+        s.text(cs[i], py + 145, name, "M7", 11, wp["text"], anchor="middle", ls=0.06)
         s.add("</g>")
     # the token: a small glowing request riding the rail
     s.add(f'<g class="wp-tok"><circle cx="{cs[STATIC]:.1f}" cy="{railY}" r="11" fill="{acc}" opacity=".22"/>'
-          f'<circle cx="{cs[STATIC]:.1f}" cy="{railY}" r="6" fill="{acc}" stroke="{t["panel_text"]}" '
+          f'<circle cx="{cs[STATIC]:.1f}" cy="{railY}" r="6" fill="{acc}" stroke="{wp["tok"]}" '
           f'stroke-width="2"/></g>')
     # one trace line per step, and the commit line
     for i, (name, desc) in enumerate(steps):
         op = "1" if i == STATIC else "0"
         s.add(f'<g class="wp-c{i}" opacity="{op}">')
-        s.text(36, capY, f"TRACE 0{i + 1}", "M7", 12, acc, ls=0.08)
-        s.text(36 + measure(f"TRACE 0{i + 1}", "M7", 12, 0.08) + 14, capY, desc, "O4", 15.5, t["panel_text"])
+        s.text(36, capY, f"TRACE 0{i + 1}", "M7", 12, wp["trace"], ls=0.08)
+        s.text(36 + measure(f"TRACE 0{i + 1}", "M7", 12, 0.08) + 14, capY, desc, "O4", 15.5, wp["text"])
         s.add("</g>")
     s.add('<g class="wp-ok" opacity="0">')
-    s.add(f'<circle cx="44" cy="{capY - 4.5}" r="8" fill="{t["ok"] if t["name"] == "dark" else "#6FCF9F"}"/>'
-          f'<path d="M40 {capY - 4.5} l3 3 l5.5 -6" fill="none" stroke="#1C1917" stroke-width="2" '
+    s.add(f'<circle cx="44" cy="{capY - 4.5}" r="8" fill="{wp["ok"]}"/>'
+          f'<path d="M40 {capY - 4.5} l3 3 l5.5 -6" fill="none" stroke="{wp["check"]}" stroke-width="2" '
           f'stroke-linecap="round" stroke-linejoin="round"/>')
-    s.text(60, capY, "COMMITTED", "M7", 12, "#6FCF9F", ls=0.08)
+    s.text(60, capY, "COMMITTED", "M7", 12, wp["ok_text"], ls=0.08)
     s.text(60 + measure("COMMITTED", "M7", 12, 0.08) + 14, capY,
            "One audited, transactional write: it all landed together, or none of it did.", "O4", 15.5,
-           t["panel_text"])
+           wp["text"])
     s.add("</g>")
 
 
