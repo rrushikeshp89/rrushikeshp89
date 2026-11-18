@@ -129,7 +129,7 @@ CSS = """
 REDUCED = "@media (prefers-reduced-motion:reduce){*{animation:none!important}}"
 
 PLAYS = 5  # how many times each diagram plays before it rests
-GROVE_PHONE_H, WORK_PHONE_H = 1010, 725  # heights of the phone-layout cards
+GROVE_PHONE_H, WORK_PHONE_H, MF_PHONE_H = 1010, 725, 980  # heights of the phone-layout cards
 
 
 def finite_loops(s: "Svg", rest: float) -> None:
@@ -464,9 +464,14 @@ def motionfolio(s: Svg, t: dict, shot_b64: str):
     s.text(W - 62, H - 44, "ALSO: THE FULL PORTFOLIO AT RRUSHIKESHP89.GITHUB.IO", "M4", 12, t["faint"],
            anchor="end", ls=0.08)
 
-    # right: browser frame with a real screenshot
-    bx, by, bw, bh = 640, 58, 500, 356
-    s.add(f'<g transform="rotate(1.6 {bx + bw / 2} {by + bh / 2})"><g class="fade" style="animation-delay:.2s">')
+    # right: browser frame with a real screenshot, and the LIVE sticker
+    browser_shot(s, t, shot_b64, 640, 58, 500, 356, 1.6)
+    live_sticker(s, t, 1085, 410)
+
+
+def browser_shot(s: Svg, t: dict, shot_b64: str, bx, by, bw, bh, rot):
+    """A tilted browser window holding the Motionfolio screenshot."""
+    s.add(f'<g transform="rotate({rot} {bx + bw / 2} {by + bh / 2})"><g class="fade" style="animation-delay:.2s">')
     s.box(bx, by, bw, bh, r=16, fill=t["paper"], off=8)
     s.add(f'<line x1="{bx}" y1="{by + 38}" x2="{bx + bw}" y2="{by + 38}" stroke="{t["rule"]}" stroke-width="2"/>')
     for i, c in enumerate([t["accent"], t["sand"], t["sage"]]):
@@ -481,11 +486,46 @@ def motionfolio(s: Svg, t: dict, shot_b64: str):
           f'preserveAspectRatio="xMidYMin slice" xlink:href="data:image/jpeg;base64,{shot_b64}"/>')
     s.add(f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" rx="16" fill="none" stroke="{t["rule"]}" stroke-width="2.5"/>')
     s.add("</g></g>")
-    # sticker
-    s.add(f'<g transform="rotate(-8 1085 410)">')
-    s.add(f'<rect x="1010" y="390" width="150" height="40" rx="20" fill="{t["accent"]}" stroke="{t["rule"]}" stroke-width="2"/>')
-    s.text(1085, 415.5, "LIVE ↗", "M7", 14, "#1C1917", anchor="middle", ls=0.12)
+
+
+def live_sticker(s: Svg, t: dict, cx, cy):
+    s.add(f'<g transform="rotate(-8 {cx} {cy})">')
+    s.add(f'<rect x="{cx - 75}" y="{cy - 20}" width="150" height="40" rx="20" fill="{t["accent"]}" '
+          f'stroke="{t["rule"]}" stroke-width="2"/>')
+    s.text(cx, cy + 5.5, "LIVE ↗", "M7", 14, "#1C1917", anchor="middle", ls=0.12)
     s.add("</g>")
+
+
+def motionfolio_phone(s: Svg, t: dict, shot_b64: str):
+    """Phone layout: the screenshot on top, then the story, metrics and links, in a
+    narrower card so the text stays readable at phone width."""
+    W, H = s.w, s.h
+    s.box(3, 3, W - 14, H - 14, r=26, fill=t["card"], off=8)
+    browser_shot(s, t, shot_b64, 40, 40, 432, 300, 1.2)
+    live_sticker(s, t, 400, 340)
+    x = 38
+    s.kicker(x, 412, "NEW  ·  NOV 2026  ·  MOTION PORTFOLIO", size=12)
+    s.text(x - 4, 474, "Motionfolio", "O8", 58, t["ink"], ls=-0.02)
+    y = s.para(x, 514, "My animated portfolio. Kinetic type, a live RBAC simulator, 3D tilt cards "
+               "and a write path that traces itself, all in CSS and the browser's Web Animations "
+               "API, with no animation library.", "O4", 18, W - 14 - 2 * x, 27, t["muted"])
+    rows = [
+        ("100 · 100 · 100 · 100", "Lighthouse mobile"),
+        ("147.2 kB", "of JavaScript, under 150 kB"),
+        ("113 tests", "61 unit, 52 end-to-end"),
+        ("0 requests", "to third parties"),
+    ]
+    yy = y + 50
+    for i, (a, b) in enumerate(rows):
+        s.add(f'<rect x="{x}" y="{yy - 15}" width="10" height="10" fill="{t["accent"]}"/>')
+        s.text(x + 24, yy - 4, a, "M7", 15, t["ink"])
+        s.text(x + 24 + measure(a, "M7", 15) + 12, yy - 4, b, "O4", 16, t["muted"])
+        yy += 34
+    s.tags(x, yy + 6, ["NEXT.JS 16", "REACT 19", "TAILWIND V4", "WAAPI", "PLAYWRIGHT + AXE"],
+           W - 14 - 2 * x, size=11.5, h=26)
+    s.add(f'<rect x="{x}" y="{H - 104}" width="{W - 14 - 2 * x}" height="2" fill="{t["hair"]}"/>')
+    s.text(x, H - 68, "rrushikeshp89.github.io/motionfolio  ↗", "M7", 15, t["accent_text"], ls=0.02)
+    s.text(x, H - 40, "ALSO: THE FULL PORTFOLIO AT RRUSHIKESHP89.GITHUB.IO", "M4", 11, t["faint"], ls=0.06)
 
 
 def project(s: Svg, t: dict, d: dict):
@@ -1117,10 +1157,11 @@ def main() -> None:
          "Open to Software Developer roles.", 1200, 420)
     save("stats", stats, "8 public projects, 6 live sites, 130+ tests on Grove HRMS, and Lighthouse "
          "100 in all four categories on Motionfolio.", 1200, 160)
-    save("motionfolio", lambda s, t: motionfolio(s, t, shot),
-         "Motionfolio, my animated portfolio, new in November 2026: Lighthouse mobile 100 in all four "
-         "categories, 147.2 kB of JavaScript, 113 tests, no third-party requests. Live at "
-         "rrushikeshp89.github.io/motionfolio.", 1200, 560)
+    mf_label = ("Motionfolio, my animated portfolio, new in November 2026: Lighthouse mobile 100 in all "
+                "four categories, 147.2 kB of JavaScript, 113 tests, no third-party requests. Live at "
+                "rrushikeshp89.github.io/motionfolio.")
+    save("motionfolio", lambda s, t: motionfolio(s, t, shot), mf_label, 1200, 560)
+    save("motionfolio-phone", lambda s, t: motionfolio_phone(s, t, shot), mf_label, 520, MF_PHONE_H)
 
     GROVE = dict(
         kicker="FLAGSHIP  ·  HRMS", title="Grove HRMS", big=52, textw=600,
