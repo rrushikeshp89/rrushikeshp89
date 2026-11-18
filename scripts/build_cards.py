@@ -738,31 +738,118 @@ def principles(s: Svg, t: dict):
         s.text(x + w - 26, 262, f"0{i + 1} / 03", "M4", 11.5, t["ink"], anchor="end", ls=0.06)
         s.add("</g></g>")
 
-    # write path panel
-    py, ph = 316, 196
+    # write path panel: a request travels the path; each step pops as it arrives and
+    # stays lit, a trace line says what that step does, and the write commits at the end.
+    # With no animation it shows the trace paused at step 03.
+    py, ph = 316, 250
     s.box(3, py, s.w - 14, ph, r=22, fill=t["panel"], stroke=t["rule"], off=7)
     s.add(f'<circle cx="38" cy="{py + 40}" r="5" fill="{t["accent"]}"/>')
     s.text(52, py + 45, "GROVE HRMS WRITE PATH", "M7", 13, t["panel_text"], ls=0.1)
     s.text(36, py + 76, "Every write in Grove HRMS takes this path, and it is traced on the server.",
            "O4", 16, t["panel_muted"])
-    steps = ["INTERFACE", "SERVER ACTION", "PERMISSION", "ZOD", "TRANSACTION", "AUDIT LOG", "POSTGRES"]
-    n = len(steps)
+    steps = [
+        ("INTERFACE", "The browser submits a form. Nothing it sends is trusted."),
+        ("SERVER ACTION", "A Next.js server action receives it and authenticates the session."),
+        ("PERMISSION", "Role, scope and record are checked on the server; hiding a button is never the only safeguard."),
+        ("ZOD", "The input is validated with Zod before anything is written."),
+        ("TRANSACTION", "The change, its audit entries and notifications commit or roll back together."),
+        ("AUDIT LOG", "Every change records who did what, and when."),
+        ("POSTGRES", "Postgres via Prisma, with row level security on and no public access."),
+    ]
+    n, STATIC = len(steps), 2
     sw_, sg = (s.w - 14 - 64 - (n - 1) * 12) / n, 12
-    period = n * 1.1
-    s.extra_css += (f"@keyframes trace{{0%{{fill:{t['accent']}}}{100 / n:.2f}%{{fill:{t['accent']}}}"
-                    f"{100 / n + 0.01:.2f}%,100%{{fill:{t['panel_raised']}}}}}"
-                    f".step{{fill:{t['panel_raised']};animation:trace {period:.1f}s steps(1) infinite}}"
-                    f"@media (prefers-reduced-motion:reduce){{.step.s2{{fill:{t['accent']}}}}}")
-    for i, st in enumerate(steps):
-        x = 35 + i * (sw_ + sg)
-        s.add(f'<rect x="{x:.1f}" y="{py + 100}" width="{sw_:.1f}" height="62" rx="10" '
-              f'stroke="{t["panel_line"]}" stroke-width="1.5" class="step s{i}" '
-              f'style="animation-delay:{i * 1.1:.1f}s"/>')
+    P, win = 11.2, 12.5                      # loop length (s), one step's share of it (%)
+    base, line, acc, done = t["panel_raised"], t["panel_line"], t["accent"], "#3A2620"
+    ease = "animation-timing-function:cubic-bezier(.45,0,.55,1)"
+    xs = [35 + i * (sw_ + sg) for i in range(n)]
+    cs = [x + sw_ / 2 for x in xs]
+    railY, capY = py + 186, py + 224
+    L = cs[-1] - cs[0]
+
+    def f(v):  # keyframe percent
+        return f"{max(0, min(100, v)):.2f}"
+
+    css = []
+    for i in range(n):
+        a = i * win
+        st_base, st_cur, st_done = (f"fill:{base};stroke:{line}", f"fill:{acc};stroke:{acc}",
+                                    f"fill:{done};stroke:{acc}")
+        css.append(f"@keyframes wpS{i}{{0%{{{st_base}}}{f(a)}%{{{st_base}}}{f(a + 1.2)}%{{{st_cur}}}"
+                   f"{f(a + win)}%{{{st_cur}}}{f(a + win + 1.5)}%{{{st_done}}}96%{{{st_done}}}"
+                   f"99%,100%{{{st_base}}}}}.wp-s{i}{{animation:wpS{i} {P}s ease-in-out infinite}}")
+        css.append(f"@keyframes wpP{i}{{0%,{f(a)}%{{transform:scale(1)}}{f(a + 1.4)}%{{transform:scale(1.07)}}"
+                   f"{f(a + 3)}%{{transform:scale(.985)}}{f(a + 4.4)}%,100%{{transform:scale(1)}}}}"
+                   f".wp-p{i}{{transform-box:fill-box;transform-origin:center;"
+                   f"animation:wpP{i} {P}s cubic-bezier(.45,0,.55,1) infinite}}")
+        out_at = (i + 1) * win if i < n - 1 else n * win + 0.5
+        css.append(f"@keyframes wpC{i}{{0%,{f(a + 0.8)}%{{opacity:0;transform:translateY(5px)}}"
+                   f"{f(a + 2.2)}%,{f(out_at - 0.6)}%{{opacity:1;transform:none}}"
+                   f"{f(out_at + 0.4)}%,100%{{opacity:0;transform:none}}}}"
+                   f".wp-c{i}{{animation:wpC{i} {P}s ease-out infinite}}")
+    # the request token and the rail it fills, stopping under each step
+    tok = [f"0%{{opacity:0;transform:translateX({cs[0] - cs[STATIC]:.1f}px);{ease}}}"]
+    rail = [f"0%{{transform:scaleX(0);{ease}}}"]
+    for i in range(n):
+        a = i * win
+        arrive, leave = (1.0 if i == 0 else a + 1), ((i + 1) * win - 3)
+        dx, k = cs[i] - cs[STATIC], (cs[i] - cs[0]) / L
+        tok.append(f"{f(arrive)}%{{opacity:1;transform:translateX({dx:.1f}px);{ease}}}")
+        rail.append(f"{f(arrive)}%{{transform:scaleX({k:.4f});{ease}}}")
+        if i < n - 1:
+            tok.append(f"{f(leave)}%{{opacity:1;transform:translateX({dx:.1f}px);{ease}}}")
+            rail.append(f"{f(leave)}%{{transform:scaleX({k:.4f});{ease}}}")
+    tok += [f"96%{{opacity:1;transform:translateX({cs[-1] - cs[STATIC]:.1f}px)}}",
+            f"99%,100%{{opacity:0;transform:translateX({cs[-1] - cs[STATIC]:.1f}px)}}"]
+    rail += ["96%{transform:scaleX(1);opacity:1}", "99%{transform:scaleX(1);opacity:0}",
+             "100%{transform:scaleX(0);opacity:0}"]
+    css.append("@keyframes wpTok{" + "".join(tok) + f"}}.wp-tok{{animation:wpTok {P}s infinite}}")
+    css.append("@keyframes wpRail{" + "".join(rail) + f"}}.wp-rail{{transform-box:fill-box;"
+               f"transform-origin:left center;animation:wpRail {P}s infinite}}")
+    end = n * win
+    css.append(f"@keyframes wpOk{{0%,{f(end + 1)}%{{opacity:0;transform:translateY(5px)}}"
+               f"{f(end + 2.5)}%,95%{{opacity:1;transform:none}}97.5%,100%{{opacity:0}}}}"
+               f".wp-ok{{animation:wpOk {P}s ease-out infinite}}")
+    s.extra_css += "".join(css)
+
+    # rail under the steps
+    s.add(f'<line x1="{cs[0]:.1f}" y1="{railY}" x2="{cs[-1]:.1f}" y2="{railY}" stroke="{line}" '
+          f'stroke-width="2" stroke-linecap="round"/>')
+    k2 = (cs[STATIC] - cs[0]) / L
+    s.add(f'<rect x="{cs[0]:.1f}" y="{railY - 1.5}" width="{L:.1f}" height="3" rx="1.5" fill="{acc}" '
+          f'class="wp-rail" transform="scale({k2:.4f} 1)"/>')  # origin: the class's left edge
+    for i, (name, _) in enumerate(steps):
+        x = xs[i]
+        fill, stroke = ((done, acc) if i < STATIC else (acc, acc) if i == STATIC else (base, line))
         if i < n - 1:
             s.add(f'<line x1="{x + sw_:.1f}" y1="{py + 131}" x2="{x + sw_ + sg:.1f}" y2="{py + 131}" '
-                  f'stroke="{t["panel_line"]}" stroke-width="2"/>')
-        s.text(x + sw_ / 2, py + 125, f"0{i + 1}", "M7", 11, t["panel_text"], anchor="middle")
-        s.text(x + sw_ / 2, py + 145, st, "M7", 11, t["panel_text"], anchor="middle", ls=0.06)
+                  f'stroke="{line}" stroke-width="2"/>')
+        s.add(f'<circle cx="{cs[i]:.1f}" cy="{railY}" r="3" fill="{line}"/>')
+        s.add(f'<g class="wp-p{i}">')
+        s.add(f'<rect x="{x:.1f}" y="{py + 100}" width="{sw_:.1f}" height="62" rx="10" fill="{fill}" '
+              f'stroke="{stroke}" stroke-width="1.5" class="wp-s{i}"/>')
+        s.text(cs[i], py + 125, f"0{i + 1}", "M7", 11, t["panel_text"], anchor="middle")
+        s.text(cs[i], py + 145, name, "M7", 11, t["panel_text"], anchor="middle", ls=0.06)
+        s.add("</g>")
+    # the token: a small glowing request riding the rail
+    s.add(f'<g class="wp-tok"><circle cx="{cs[STATIC]:.1f}" cy="{railY}" r="11" fill="{acc}" opacity=".22"/>'
+          f'<circle cx="{cs[STATIC]:.1f}" cy="{railY}" r="6" fill="{acc}" stroke="{t["panel_text"]}" '
+          f'stroke-width="2"/></g>')
+    # one trace line per step, and the commit line
+    for i, (name, desc) in enumerate(steps):
+        op = "1" if i == STATIC else "0"
+        s.add(f'<g class="wp-c{i}" opacity="{op}">')
+        s.text(36, capY, f"TRACE 0{i + 1}", "M7", 12, acc, ls=0.08)
+        s.text(36 + measure(f"TRACE 0{i + 1}", "M7", 12, 0.08) + 14, capY, desc, "O4", 15.5, t["panel_text"])
+        s.add("</g>")
+    s.add('<g class="wp-ok" opacity="0">')
+    s.add(f'<circle cx="44" cy="{capY - 4.5}" r="8" fill="{t["ok"] if t["name"] == "dark" else "#6FCF9F"}"/>'
+          f'<path d="M40 {capY - 4.5} l3 3 l5.5 -6" fill="none" stroke="#1C1917" stroke-width="2" '
+          f'stroke-linecap="round" stroke-linejoin="round"/>')
+    s.text(60, capY, "COMMITTED", "M7", 12, "#6FCF9F", ls=0.08)
+    s.text(60 + measure("COMMITTED", "M7", 12, 0.08) + 14, capY,
+           "One audited, transactional write: it all landed together, or none of it did.", "O4", 15.5,
+           t["panel_text"])
+    s.add("</g>")
 
 
 def experience(s: Svg, t: dict):
@@ -1037,7 +1124,7 @@ def main() -> None:
     save("principles", principles, "How I work. Rule 01, show the why. Rule 02, enforce it on the "
          "server. Rule 03, prove it, then say what's missing. Every write in Grove HRMS takes one path: "
          "interface, server action, permission check, Zod validation, transaction, audit log, Postgres.",
-         1200, 522)
+         1200, 576)
     save("experience", experience, "Experience: Business Analytics Intern at Maincrafts Technology, "
          "January to April 2026, remote. Data Science Intern at Zetpeak, October 2025 to January 2026, "
          "Bengaluru, where tested data-quality checks cut ingestion errors by 15%. Education: B.Tech in "
