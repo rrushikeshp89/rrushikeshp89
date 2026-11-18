@@ -15,6 +15,9 @@
 
 I came to software through data science, and I still think like an analyst: **if a system gives you a number, it should be able to tell you why.** Today I build complete business systems end to end, from the data model and server-side permissions to an accessible interface, the tests and the deployment. Every project ships with a live demo and an honest list of what it doesn't do yet.
 
+**Currently:** open to Software Developer roles · based in Bengaluru, India · B.Tech CSE (Data Science), 2026<br>
+**Day to day:** TypeScript, React, Next.js, Node.js, PostgreSQL, Prisma, Python
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/stats-dark.svg">
   <img src="assets/stats-light.svg" width="100%" alt="8 public projects, 6 live sites, 130+ tests on Grove HRMS, and Lighthouse 100 in all four categories on Motionfolio.">
@@ -57,7 +60,7 @@ I came to software through data science, and I still think like an analyst: **if
 
 <a href="https://github.com/rrushikeshp89/Tessaract"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tessaract-dark.svg"><img src="assets/tessaract-light.svg" width="32%" alt="Tessaract: résumé-to-job matching that shows its arithmetic. Four weighted parts per score, no LLM API needed. FastAPI, Postgres, React 19."></picture></a>&nbsp;<a href="https://github.com/rrushikeshp89/StrategyRoom.ai"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/strategyroom-dark.svg"><img src="assets/strategyroom-light.svg" width="32%" alt="StrategyRoom.ai: two-agent investment research with a reasoning chain, citations and a confidence breakdown. Supabase, Gemini, React."></picture></a>&nbsp;<a href="https://hospital-readmission-shield-diabetes-mxh3cfy4tg5movmukaphtm.streamlit.app/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readmission-dark.svg"><img src="assets/readmission-light.svg" width="32%" alt="Readmission Shield: flags 30-day readmission risk for diabetic patients. 0.55 recall on a 9 to 91 class imbalance, SHAP reasons for every score. XGBoost, SHAP, Streamlit."></picture></a>
 
-<details>
+<details open>
 <summary><b>Every project at a glance</b> (links, stack and status)</summary>
 <br>
 
