@@ -114,6 +114,8 @@ The LeadHub CRM holds a real team's data, so sign-in is by invitation; the publi
 ## How I work
 
 <picture>
+  <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/principles-phone-dark.svg">
+  <source media="(max-width: 700px)" srcset="assets/principles-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/principles-dark.svg">
   <img src="assets/principles-light.svg" width="100%" alt="How I work. Rule 01, show the why. Rule 02, enforce it on the server. Rule 03, prove it, then say what's missing. Every write in Grove HRMS takes one path: interface, server action, permission check, Zod validation, transaction, audit log, Postgres.">
 </picture>
