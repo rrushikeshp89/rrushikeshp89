@@ -166,6 +166,7 @@ class Svg:
         self.extra_css = ""
         self.defs: list[str] = []
         self.paths = False          # draw text as glyph outlines instead of <text>
+        self.fp = ""                # font-family prefix; unique per card when cards are composed
         self.glyphs: set[str] = set()
 
     def add(self, s: str) -> None:
@@ -182,7 +183,7 @@ class Svg:
         c = f' class="{cls}"' if cls else ""
         st = f' style="{style}"' if style else ""
         tl = f' textLength="{fit:.1f}" lengthAdjust="spacingAndGlyphs"' if fit else ""
-        self.add(f'<text x="{x:.1f}" y="{y:.1f}" font-family="{font}, {FALLBACK[font]}" '
+        self.add(f'<text x="{x:.1f}" y="{y:.1f}" font-family="{self.fp}{font}, {FALLBACK[font]}" '
                  f'font-weight="{WEIGHT[font]}" font-size="{size}" fill="{fill}"{a}{l}{c}{st}{tl}{extra}>'
                  f"{escape(s)}</text>")
 
@@ -292,7 +293,7 @@ class Svg:
             font["head"].modified = font["head"].created
             font.save(buf)
             b64 = base64.b64encode(buf.getvalue()).decode()
-            out.append(f"@font-face{{font-family:{key};font-weight:{WEIGHT[key]};"
+            out.append(f"@font-face{{font-family:{self.fp}{key};font-weight:{WEIGHT[key]};"
                        f"src:url(data:font/woff2;base64,{b64}) format('woff2')}}")
         return "".join(out)
 
@@ -312,6 +313,32 @@ def save(name: str, build, label: str, w: int, h: int) -> None:
         build(s, theme)
         (OUT / f"{name}-{theme['name']}.svg").write_text(s.render(), encoding="utf-8")
         print(f"  {name}-{theme['name']}.svg  {len(s.render()) / 1024:.1f} kB")
+
+
+def save_composed(name: str, parts: list, label: str, w: int, h: int, layouts: dict) -> None:
+    """Several cards in one SVG, once per layout (e.g. a row for wide screens, a stack for
+    phones). The README picks a layout with <picture> media queries, so the cards stay
+    readable on a phone without changing how they look on a desktop."""
+    for theme in (LIGHT, DARK):
+        docs = []
+        for i, build in enumerate(parts):
+            c = Svg(w, h, label, theme)
+            c.fp = f"c{i}"
+            build(c, theme)
+            docs.append(c.render())
+        for lname, (cols, gap) in layouts.items():
+            rows = -(-len(docs) // cols)
+            W, H = cols * w + (cols - 1) * gap, rows * h + (rows - 1) * gap
+            body = []
+            for i, d in enumerate(docs):
+                x, y = (i % cols) * (w + gap), (i // cols) * (h + gap)
+                body.append(d.replace("<svg ", f'<svg x="{x}" y="{y}" ', 1))
+            out = (f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
+                   f'width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" '
+                   f'aria-label="{escape(label, {chr(34): "&quot;"})}">\n<title>{escape(label)}</title>\n'
+                   + "".join(body) + "</svg>\n")
+            (OUT / f"{name}-{lname}-{theme['name']}.svg").write_text(out, encoding="utf-8")
+            print(f"  {name}-{lname}-{theme['name']}.svg  {len(out) / 1024:.1f} kB")
 
 
 def dot_grid(s: Svg, x, y, w, h, gap=22):
@@ -1107,6 +1134,7 @@ def main() -> None:
         "that suggests but never edits, 37 tests and a Docker image tested in CI. React, Express 5, "
         "Turso, Claude API.", 600, 500)
 
+    xai, xai_labels = [], []
     for name, kick, title, pitch, mets, tg, url, vis, label in [
         ("tessaract", "EXPLAINABLE IR", "Tessaract", "Résumé-to-job matching that shows its arithmetic.",
          [("4 weighted parts", "per score"), ("No LLM API", "needed to score")],
@@ -1124,10 +1152,13 @@ def main() -> None:
          "Readmission Shield: flags 30-day readmission risk for diabetic patients. 0.55 recall on a "
          "9 to 91 class imbalance, SHAP reasons for every score. XGBoost, SHAP, Streamlit."),
     ]:
-        save(name, lambda s, t, k=kick, ti=title, p=pitch, m=mets, tg=tg, u=url, v=vis: project(s, t, dict(
+        xai.append(lambda s, t, k=kick, ti=title, p=pitch, m=mets, tg=tg, u=url, v=vis: project(s, t, dict(
             kicker=k, title=ti, big=34 if len(ti) < 14 else 30, pitch=p, metrics=m, tags=tg, url=u,
-            visual=v, pad=30, ps=16, plh=23, ms=13.5, gap=30, mgap=12, us=13, textw=326, top=148)),
-            label, 400, 510)
+            visual=v, pad=30, ps=16, plh=23, ms=13.5, gap=30, mgap=12, us=13, textw=326, top=148)))
+        xai_labels.append(label)
+    # one image, two layouts: three across on wide screens, stacked on phones
+    save_composed("xai", xai, " ".join(xai_labels), 400, 510, {"row": (3, 24), "stack": (1, 24)})
+
 
     save("principles", principles, "How I work. Rule 01, show the why. Rule 02, enforce it on the "
          "server. Rule 03, prove it, then say what's missing. Every write in Grove HRMS takes one path: "
