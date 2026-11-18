@@ -16,7 +16,7 @@
 .lift{animation:lift 1s cubic-bezier(.22,1,.36,1) both}
 @keyframes show{from{opacity:0}to{opacity:1}}
 @keyframes lift{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-@keyframes col{0%,30%{transform:translateX(0)}34%,63%{transform:translateX(90px)}67%,96%{transform:translateX(190px)}100%{transform:translateX(0)}}.col{animation:col 7.5s cubic-bezier(.65,0,.35,1) infinite}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
+@keyframes col{0%,30%{transform:translateX(0)}34%,63%{transform:translateX(90px)}67%,96%{transform:translateX(190px)}100%{transform:translateX(0)}}.col{animation:col 7.5s cubic-bezier(.65,0,.35,1) 4.9 forwards}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
 
 <g><rect x="10.0" y="10.0" width="1186.0" height="486.0" rx="24" fill="#1C1917"/><rect x="3.0" y="3.0" width="1186.0" height="486.0" rx="24" fill="#FFFDF8" stroke="#1C1917" stroke-width="2.5"/></g>
 <circle cx="45" cy="53.5" r="5" fill="#E05A36"/>
