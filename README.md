@@ -15,11 +15,6 @@
 
 I came to software through data science, and I still think like an analyst: **if a system gives you a number, it should be able to tell you why.** Today I build complete business systems end to end, from the data model and server-side permissions to an accessible interface, the tests and the deployment. Every project ships with a live demo and an honest list of what it doesn't do yet.
 
-> [!TIP]
-> **New:** [Motionfolio](https://rrushikeshp89.github.io/motionfolio/) is my animated portfolio. Hover the letters of my name, switch roles in the live RBAC simulator, and watch Grove's write path trace itself.
-
-<br>
-
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/stats-dark.svg">
   <img src="assets/stats-light.svg" width="100%" alt="8 public projects, 6 live sites, 130+ tests on Grove HRMS, and Lighthouse 100 in all four categories on Motionfolio.">
@@ -38,7 +33,7 @@ I came to software through data science, and I still think like an analyst: **if
 
 <p align="center">
   <sub>
-    <a href="https://rrushikeshp89.github.io/motionfolio/"><b>Motionfolio</b></a> (<a href="https://github.com/rrushikeshp89/motionfolio">source</a>) &nbsp;·&nbsp;
+    <a href="https://rrushikeshp89.github.io/motionfolio/"><b>Motionfolio</b></a>: hover the letters of my name, switch roles in the RBAC simulator, watch the write path trace itself (<a href="https://github.com/rrushikeshp89/motionfolio">source</a>)<br>
     <a href="https://rrushikeshp89.github.io"><b>Main portfolio</b></a> with case studies and résumé (<a href="https://github.com/rrushikeshp89/rrushikeshp89.github.io">source</a>)
   </sub>
 </p>
