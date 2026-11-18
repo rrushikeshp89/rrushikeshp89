@@ -29,6 +29,8 @@ I came to software through data science, and I still think like an analyst: **if
 
 <a href="https://rrushikeshp89.github.io/motionfolio/">
   <picture>
+    <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/motionfolio-phone-dark.svg">
+    <source media="(max-width: 700px)" srcset="assets/motionfolio-phone-light.svg">
     <source media="(prefers-color-scheme: dark)" srcset="assets/motionfolio-dark.svg">
     <img src="assets/motionfolio-light.svg" width="100%" alt="Motionfolio, my animated portfolio, new in November 2026: Lighthouse mobile 100 in all four categories, 147.2 kB of JavaScript, 113 tests, no third-party requests. Live at rrushikeshp89.github.io/motionfolio.">
   </picture>
