@@ -129,6 +129,7 @@ CSS = """
 REDUCED = "@media (prefers-reduced-motion:reduce){*{animation:none!important}}"
 
 PLAYS = 5  # how many times each diagram plays before it rests
+GROVE_PHONE_H, WORK_PHONE_H = 1010, 725  # heights of the phone-layout cards
 
 
 def finite_loops(s: "Svg", rest: float) -> None:
@@ -324,18 +325,19 @@ def save(name: str, build, label: str, w: int, h: int) -> None:
         print(f"  {name}-{theme['name']}.svg  {len(s.render()) / 1024:.1f} kB")
 
 
-def save_composed(name: str, parts: list, label: str, w: int, h: int, layouts: dict) -> None:
-    """Several cards in one SVG, once per layout (e.g. a row for wide screens, a stack for
-    phones). The README picks a layout with <picture> media queries, so the cards stay
-    readable on a phone without changing how they look on a desktop."""
+def save_composed(name: str, label: str, layouts: dict) -> None:
+    """Several cards in one SVG, once per layout: {layout: (builders, w, h, cols, gap)}.
+    A wide layout (cards side by side) and a phone layout (cards stacked, possibly drawn in
+    a narrower portrait shape) are both written; the README picks one with <picture> media
+    queries, so the cards stay readable on a phone without changing the desktop look."""
     for theme in (LIGHT, DARK):
-        docs = []
-        for i, build in enumerate(parts):
-            c = Svg(w, h, label, theme)
-            c.fp = f"c{i}"
-            build(c, theme)
-            docs.append(c.render())
-        for lname, (cols, gap) in layouts.items():
+        for lname, (parts, w, h, cols, gap) in layouts.items():
+            docs = []
+            for i, build in enumerate(parts):
+                c = Svg(w, h, label, theme)
+                c.fp = f"c{i}"
+                build(c, theme)
+                docs.append(c.render())
             rows = -(-len(docs) // cols)
             W, H = cols * w + (cols - 1) * gap, rows * h + (rows - 1) * gap
             body = []
@@ -517,8 +519,17 @@ def project(s: Svg, t: dict, d: dict):
     ty = s.tags(pad, y + 4, d["tags"], d.get("tagw", textw), size=d.get("ts", 11.5), h=26)
     s.add(f'<rect x="{pad}" y="{H - 70}" width="{W - 14 - pad * 2}" height="2" fill="{t["hair"]}"/>')
     s.text(pad, H - 38, d["url"], "M7", d.get("us", 14), t["accent_text"], ls=0.02)
+    if d.get("band"):  # phone layouts: frame the diagram in a band above the text
+        bx, by, bw, bh = d["band"]
+        s.add(f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" rx="12" fill="{t["paper"]}" '
+              f'stroke="{t["rule"]}" stroke-width="1.8"/>')
     if d.get("visual"):
+        dx, dy = d.get("vis_at", (0, 0))
+        if dx or dy:
+            s.add(f'<g transform="translate({dx} {dy})">')
         d["visual"](s, t)
+        if dx or dy:
+            s.add("</g>")
 
 
 def v_rbac(s: Svg, t: dict):
@@ -1111,7 +1122,7 @@ def main() -> None:
          "categories, 147.2 kB of JavaScript, 113 tests, no third-party requests. Live at "
          "rrushikeshp89.github.io/motionfolio.", 1200, 560)
 
-    save("grove", lambda s, t: project(s, t, dict(
+    GROVE = dict(
         kicker="FLAGSHIP  ·  HRMS", title="Grove HRMS", big=52, textw=600,
         pitch="A full-stack HR system for a 100-person company: people, attendance, leave, payroll "
               "and hiring, with separate experiences for employees, managers, HR and admins.",
@@ -1120,12 +1131,17 @@ def main() -> None:
                  ("1 write path", "Zod-validated, transactional, audit-logged"),
                  ("130+ tests", "Vitest, Playwright and axe · Lighthouse a11y 100")],
         tags=["NEXT.JS 16", "TYPESCRIPT", "PRISMA", "POSTGRES", "PLAYWRIGHT"],
-        url="hrms.fluentopsai.com  ↗", gap=40, visual=v_rbac)),
-        "Grove HRMS, my flagship HR system: 45 tables, 28 scoped permissions across 4 roles, one "
-        "audited transactional write path, 130+ tests and Lighthouse accessibility 100. Next.js 16, "
-        "TypeScript, Prisma, Postgres, Playwright. Live at hrms.fluentopsai.com.", 1200, 500)
+        url="hrms.fluentopsai.com  ↗", gap=40, visual=v_rbac)
+    grove_label = ("Grove HRMS, my flagship HR system: 45 tables, 28 scoped permissions across 4 roles, "
+                   "one audited transactional write path, 130+ tests and Lighthouse accessibility 100. "
+                   "Next.js 16, TypeScript, Prisma, Postgres, Playwright. Live at hrms.fluentopsai.com.")
+    save("grove", lambda s, t: project(s, t, GROVE), grove_label, 1200, 500)
+    # phone: the role table on top, the text below, in a narrower card that stays readable
+    save("grove-phone", lambda s, t: project(s, t, dict(
+        GROVE, pad=34, textw=438, big=46, top=352, vis_at=(-663, -16), ps=17, plh=25)),
+        grove_label, 520, GROVE_PHONE_H)
 
-    save("stockroom", lambda s, t: project(s, t, dict(
+    STOCK = dict(
         kicker="ERP · INVENTORY", title="Stockroom", big=42, textw=250, pad=34,
         pitch="Inventory and purchase orders for small shops and cafés.",
         metrics=[("Atomic receiving,", "enforced by database triggers"),
@@ -1133,22 +1149,30 @@ def main() -> None:
                  ("CLS 0.495 → 0.004", ""),
                  ("956 tap targets", "fixed")],
         tags=["REACT", "EXPRESS 5", "SQLITE", "ZOD"], tagw=520, ms=14, gap=36, mgap=16,
-        url="erp.fluentopsai.com  ↗", visual=v_states)),
-        "Stockroom, inventory and purchase-order ERP: atomic receiving enforced by database "
-        "triggers, four-layer RBAC with 20 permissions across 3 roles, layout shift cut from 0.495 "
-        "to 0.004. React, Express 5, SQLite, Zod. Live at erp.fluentopsai.com.", 600, 500)
-
-    save("leadhub", lambda s, t: project(s, t, dict(
+        url="erp.fluentopsai.com  ↗", visual=v_states)
+    LEAD = dict(
         kicker="CRM · SALES", title="LeadHub", big=42, textw=270, pad=34,
         pitch="A B2B sales CRM whose rules live in one TypeScript layer.",
         metrics=[("10-stage pipeline,", "weighted forecasts"),
                  ("Claude assistant", "that suggests, never edits"),
                  ("37 tests,", "Docker image in CI")],
         tags=["REACT", "EXPRESS 5", "TURSO", "CLAUDE API"], tagw=520, ms=14, gap=36, mgap=16,
-        url="crm.fluentopsai.com/inquiry  ↗", visual=v_pipeline)),
+        url="crm.fluentopsai.com/inquiry  ↗", visual=v_pipeline)
+    # phone: portrait cards with the diagram framed in a band on top, like the AI cards
+    stock_phone = dict(STOCK, textw=358, tagw=358, top=250, band=(30, 28, 366, 226), vis_at=(-218, -74))
+    lead_phone = dict(LEAD, textw=358, tagw=358, top=250, band=(30, 28, 366, 226), vis_at=(-222, -66))
+    work_label = (
+        "Stockroom, inventory and purchase-order ERP: atomic receiving enforced by database "
+        "triggers, four-layer RBAC with 20 permissions across 3 roles, layout shift cut from 0.495 "
+        "to 0.004. React, Express 5, SQLite, Zod. Live at erp.fluentopsai.com. "
         "LeadHub, a B2B sales CRM: 10-stage pipeline with weighted forecasts, a Claude assistant "
         "that suggests but never edits, 37 tests and a Docker image tested in CI. React, Express 5, "
-        "Turso, Claude API.", 600, 500)
+        "Turso, Claude API.")
+    save_composed("work", work_label, {
+        "row": ([lambda s, t: project(s, t, STOCK), lambda s, t: project(s, t, LEAD)], 600, 500, 2, 24),
+        "stack": ([lambda s, t: project(s, t, stock_phone), lambda s, t: project(s, t, lead_phone)],
+                  440, WORK_PHONE_H, 1, 24),
+    })
 
     xai, xai_labels = [], []
     for name, kick, title, pitch, mets, tg, url, vis, label in [
@@ -1173,7 +1197,8 @@ def main() -> None:
             visual=v, pad=30, ps=16, plh=23, ms=13.5, gap=30, mgap=12, us=13, textw=326, top=148)))
         xai_labels.append(label)
     # one image, two layouts: three across on wide screens, stacked on phones
-    save_composed("xai", xai, " ".join(xai_labels), 400, 510, {"row": (3, 24), "stack": (1, 24)})
+    save_composed("xai", " ".join(xai_labels), {"row": (xai, 400, 510, 3, 24),
+                                                "stack": (xai, 400, 510, 1, 24)})
 
 
     save("principles", principles, "How I work. Rule 01, show the why. Rule 02, enforce it on the "

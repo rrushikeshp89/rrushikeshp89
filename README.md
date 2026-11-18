@@ -47,12 +47,27 @@ I came to software through data science, and I still think like an analyst: **if
 
 <a href="https://github.com/rrushikeshp89/grove-hrms">
   <picture>
+    <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/grove-phone-dark.svg">
+    <source media="(max-width: 700px)" srcset="assets/grove-phone-light.svg">
     <source media="(prefers-color-scheme: dark)" srcset="assets/grove-dark.svg">
     <img src="assets/grove-light.svg" width="100%" alt="Grove HRMS, my flagship HR system: 45 tables, 28 scoped permissions across 4 roles, one audited transactional write path, 130+ tests and Lighthouse accessibility 100. Next.js 16, TypeScript, Prisma, Postgres, Playwright. Live at hrms.fluentopsai.com.">
   </picture>
 </a>
 
-<a href="https://github.com/rrushikeshp89/stockroom-erp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/stockroom-dark.svg"><img src="assets/stockroom-light.svg" width="48.5%" alt="Stockroom, inventory and purchase-order ERP: atomic receiving enforced by database triggers, four-layer RBAC with 20 permissions across 3 roles, layout shift cut from 0.495 to 0.004. React, Express 5, SQLite, Zod. Live at erp.fluentopsai.com."></picture></a>&nbsp;<a href="https://github.com/rrushikeshp89/leadhub-crm"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/leadhub-dark.svg"><img src="assets/leadhub-light.svg" width="48.5%" alt="LeadHub, a B2B sales CRM: 10-stage pipeline with weighted forecasts, a Claude assistant that suggests but never edits, 37 tests and a Docker image tested in CI. React, Express 5, Turso, Claude API."></picture></a>
+<picture>
+  <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/work-stack-dark.svg">
+  <source media="(max-width: 700px)" srcset="assets/work-stack-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/work-row-dark.svg">
+  <img src="assets/work-row-light.svg" width="100%" alt="Stockroom, inventory and purchase-order ERP: atomic receiving enforced by database triggers, four-layer RBAC with 20 permissions across 3 roles, layout shift cut from 0.495 to 0.004; React, Express 5, SQLite, Zod. LeadHub, a B2B sales CRM: 10-stage pipeline with weighted forecasts, a Claude assistant that suggests but never edits, 37 tests and a Docker image tested in CI; React, Express 5, Turso, Claude API.">
+</picture>
+
+<p align="center">
+  <sub>
+    <a href="https://github.com/rrushikeshp89/grove-hrms"><b>Grove HRMS</b></a> (<a href="https://hrms.fluentopsai.com">live demo</a>) &nbsp;·&nbsp;
+    <a href="https://github.com/rrushikeshp89/stockroom-erp"><b>Stockroom</b></a> (<a href="https://erp.fluentopsai.com">live demo</a>) &nbsp;·&nbsp;
+    <a href="https://github.com/rrushikeshp89/leadhub-crm"><b>LeadHub</b></a> (<a href="https://crm.fluentopsai.com/inquiry">inquiry form</a>)
+  </sub>
+</p>
 
 <br>
 
