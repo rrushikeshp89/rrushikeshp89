@@ -128,6 +128,15 @@ CSS = """
 """
 REDUCED = "@media (prefers-reduced-motion:reduce){*{animation:none!important}}"
 
+PLAYS = 5  # how many times each diagram plays before it rests
+
+
+def finite_loops(s: "Svg", rest: float) -> None:
+    """Make this card's diagram play PLAYS times, then hold still. The last play stops at
+    `rest` (a fraction of the loop) and keeps that frame, so each diagram comes to rest on
+    its finished state (scores filled, order received, write committed) rather than blank."""
+    s.extra_css = s.extra_css.replace(" infinite", f" {PLAYS - 1 + rest:g} forwards")
+
 
 def spring_keyframes(name: str, dur: float = 1.25, samples: int = 48,
                      zeta: float = 0.62, omega: float = 8.5, depth: float = 112.0) -> str:
@@ -540,6 +549,7 @@ def v_rbac(s: Svg, t: dict):
             else:
                 s.add(f'<rect x="{cx[i] - 22}" y="{yy - 12}" width="44" height="12" rx="3" fill="{t["sand"]}"/>')
     s.text(x + 22, y + 330, "checked on the server, not just hidden in the UI", "M4", 12, t["faint"])
+    finite_loops(s, 0.9)
 
 
 def v_states(s: Svg, t: dict):
@@ -592,6 +602,7 @@ def v_states(s: Svg, t: dict):
           f'class="po-token" opacity="0"/>')
     s.add(f'<circle cx="{tx}" cy="{ty}" r="5" fill="{t["card"]}" stroke="{acc}" stroke-width="2" '
           f'class="po-ghost" opacity="0"/>')
+    finite_loops(s, 0.88)
 
 
 def v_pipeline(s: Svg, t: dict):
@@ -629,6 +640,7 @@ def v_pipeline(s: Svg, t: dict):
         if i == 4:
             s.text(x + 118, yy + 13.5, "+1 WON", "M7", 10, t["accent_text"], ls=0.06,
                    cls="lh-plus", extra=' opacity="0"')
+    finite_loops(s, 0.8)
 
 
 def band(s: Svg, t: dict, title: str):
@@ -666,6 +678,7 @@ def v_rank(s: Svg, t: dict):
         s.add(f'<g class="ts-f{i}"><rect x="151.5" y="{yy + 1.5}" width="{147 * v:.1f}" height="13" rx="3" '
               f'fill="{t["accent"] if i == 0 else t["sage"]}" class="grow" style="animation-delay:{.2 + i * .1:.1f}s"/></g>')
         s.text(338, yy + 12.5, f"{v:.2f}", "M7", 12, t["ink"], anchor="end", cls=f"ts-n{i}")
+    finite_loops(s, 0.88)
 
 
 def v_agents(s: Svg, t: dict):
@@ -714,6 +727,7 @@ def v_agents(s: Svg, t: dict):
     # a paper-coloured cover that slides off the caption, typewriter-style
     w = measure(cap, "M4", 11) + 4
     s.add(f'<rect x="46" y="132" width="{w:.1f}" height="16" fill="{t["paper"]}" opacity="0" class="sr-cap"/>')
+    finite_loops(s, 0.88)
 
 
 def v_shap(s: Svg, t: dict):
@@ -738,6 +752,7 @@ def v_shap(s: Svg, t: dict):
         s.text(48, yy + 12, lab, "M4", 12, t["ink"], cls=f"rs-l{i}")
         s.add(f'<g class="rs-f{i}"><rect x="190" y="{yy + 2}" width="{148 * v:.1f}" height="12" rx="3" '
               f'fill="{t["accent"]}" class="grow" style="animation-delay:{.2 + i * .1:.1f}s"/></g>')
+    finite_loops(s, 0.88)
 
 
 def principles(s: Svg, t: dict):
@@ -885,6 +900,7 @@ def principles(s: Svg, t: dict):
            "One audited, transactional write: it all landed together, or none of it did.", "O4", 15.5,
            wp["text"])
     s.add("</g>")
+    finite_loops(s, 0.92)
 
 
 def experience(s: Svg, t: dict):
