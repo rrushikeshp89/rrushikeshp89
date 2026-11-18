@@ -954,6 +954,167 @@ def principles(s: Svg, t: dict):
     finite_loops(s, 0.92)
 
 
+RULES = [
+    ("SHOW THE WHY.", "Scores and decisions come with their reasons: SHAP reasons for every "
+     "readmission score, weighted factors in résumé matching.", "EXPLAINABILITY"),
+    ("ENFORCE IT ON THE SERVER.", "Permissions are checked where the data is written, so "
+     "hiding a button is never the only safeguard.", "SERVER-SIDE ENFORCEMENT"),
+    ("PROVE IT, THEN SAY WHAT'S MISSING.", "Claims ship with tests (unit, end-to-end, axe), "
+     "and every project states what it does not do yet.", "STATED LIMITS"),
+]
+WP_STEPS = [
+    ("INTERFACE", "The browser submits a form. Nothing it sends is trusted."),
+    ("SERVER ACTION", "A Next.js server action receives it and authenticates the session."),
+    ("PERMISSION", "Role, scope and record are checked on the server; hiding a button is never the only safeguard."),
+    ("ZOD", "The input is validated with Zod before anything is written."),
+    ("TRANSACTION", "The change, its audit entries and notifications commit or roll back together."),
+    ("AUDIT LOG", "Every change records who did what, and when."),
+    ("POSTGRES", "Postgres via Prisma, with row level security on and no public access."),
+]
+
+
+def wp_palette(t: dict) -> dict:
+    if t["name"] == "dark":
+        return dict(bg=t["panel"], text=t["panel_text"], muted=t["panel_muted"], base=t["panel_raised"],
+                    line=t["panel_line"], rail=t["panel_line"], done="#3A2620", trace=t["accent"],
+                    tok=t["panel_text"], ok="#6FCF9F", ok_text="#6FCF9F", check="#1C1917", cur_line=t["accent"])
+    return dict(bg=t["paper"], text=t["ink"], muted=t["muted"], base=t["card"],
+                line=t["rule"], rail="#D9CDBB", done=t["accent_soft"], trace=t["accent_text"],
+                tok=t["ink"], ok="#0B6B4A", ok_text="#0B6B4A", check="#FFFFFF", cur_line=t["rule"])
+
+
+def principles_phone(s: Svg, t: dict):
+    """Phone layout of How I work: the three rules stacked, then the write path running
+    top to bottom, with the same trace animation as the desktop panel."""
+    W = s.w
+    cw = W - 14
+    y0 = 3
+    for i, (title, body, foot) in enumerate(RULES):
+        tl = wrap(title, "O8", 26, cw - 52)
+        bl = wrap(body, "O4", 17, cw - 52)
+        title_y = y0 + 84
+        body_y = title_y + (len(tl) - 1) * 31 + 36
+        hair_y = body_y + (len(bl) - 1) * 25 + 28
+        h = hair_y - y0 + 50
+        s.add(f'<g><g class="fade" style="animation-delay:{i * .1:.1f}s">')
+        s.box(3, y0, cw, h, r=18, fill=t["card"], off=6)
+        s.text(29, y0 + 42, f"RULE // 0{i + 1}", "M7", 13, t["accent_text"], ls=0.1)
+        for k, ln in enumerate(tl):
+            s.text(29, title_y + k * 31, ln, "O8", 26, t["ink"], ls=-0.01)
+        for k, ln in enumerate(bl):
+            s.text(29, body_y + k * 25, ln, "O4", 17, t["muted"])
+        s.add(f'<line x1="29" y1="{hair_y}" x2="{cw - 23}" y2="{hair_y}" stroke="{t["hair"]}" stroke-width="1.5"/>')
+        s.text(29, hair_y + 27, foot, "M4", 12, t["ink"], ls=0.08)
+        s.text(cw - 23, hair_y + 27, f"0{i + 1} / 03", "M4", 12, t["ink"], anchor="end", ls=0.06)
+        s.add("</g></g>")
+        y0 += h + 22
+
+    # vertical write path
+    wp = wp_palette(t)
+    py = y0 + 10
+    n, STATIC = len(WP_STEPS), 2
+    P, win = 11.2, 12.5
+    base, line, acc, done = wp["base"], wp["line"], t["accent"], wp["done"]
+    ease = "animation-timing-function:cubic-bezier(.45,0,.55,1)"
+    desc = wrap("Every write in Grove HRMS takes this path, and it is traced on the server.", "O4", 16.5, cw - 64)
+    first = py + 100 + (len(desc) - 1) * 24
+    rowh, boxh = 58, 44
+    ys = [first + i * rowh for i in range(n)]          # top of each step box
+    cs = [y + boxh / 2 for y in ys]                    # centre line of each step
+    railX, bx, bw = 52, 82, cw - 82 - 26
+    L = cs[-1] - cs[0]
+    capY = ys[-1] + boxh + 50
+    cap_lines = max(len(wrap(d, "O4", 16, cw - 64)) for _, d in WP_STEPS)
+    ph = capY + 24 + cap_lines * 24 + 18 - py
+    s.box(3, py, cw, ph, r=22, fill=wp["bg"], stroke=t["rule"], off=7)
+    s.add(f'<circle cx="38" cy="{py + 40}" r="5" fill="{acc}"/>')
+    s.text(52, py + 45, "GROVE HRMS WRITE PATH", "M7", 13.5, wp["text"], ls=0.1)
+    for k, ln in enumerate(desc):
+        s.text(36, py + 76 + k * 24, ln, "O4", 16.5, wp["muted"])
+
+    def f(v):
+        return f"{max(0, min(100, v)):.2f}"
+
+    css = []
+    for i in range(n):
+        a = i * win
+        st_base, st_cur, st_done = (f"fill:{base};stroke:{line}", f"fill:{acc};stroke:{wp['cur_line']}",
+                                    f"fill:{done};stroke:{acc}")
+        css.append(f"@keyframes wpS{i}{{0%{{{st_base}}}{f(a)}%{{{st_base}}}{f(a + 1.2)}%{{{st_cur}}}"
+                   f"{f(a + win)}%{{{st_cur}}}{f(a + win + 1.5)}%{{{st_done}}}96%{{{st_done}}}"
+                   f"99%,100%{{{st_base}}}}}.wp-s{i}{{animation:wpS{i} {P}s ease-in-out infinite}}")
+        css.append(f"@keyframes wpP{i}{{0%,{f(a)}%{{transform:scale(1)}}{f(a + 1.4)}%{{transform:scale(1.04)}}"
+                   f"{f(a + 3)}%{{transform:scale(.99)}}{f(a + 4.4)}%,100%{{transform:scale(1)}}}}"
+                   f".wp-p{i}{{transform-box:fill-box;transform-origin:center;"
+                   f"animation:wpP{i} {P}s cubic-bezier(.45,0,.55,1) infinite}}")
+        out_at = (i + 1) * win if i < n - 1 else n * win + 0.5
+        css.append(f"@keyframes wpC{i}{{0%,{f(a + 0.8)}%{{opacity:0;transform:translateY(5px)}}"
+                   f"{f(a + 2.2)}%,{f(out_at - 0.6)}%{{opacity:1;transform:none}}"
+                   f"{f(out_at + 0.4)}%,100%{{opacity:0;transform:none}}}}"
+                   f".wp-c{i}{{animation:wpC{i} {P}s ease-out infinite}}")
+    tok = [f"0%{{opacity:0;transform:translateY({cs[0] - cs[STATIC]:.1f}px);{ease}}}"]
+    rail = [f"0%{{transform:scaleY(0);{ease}}}"]
+    for i in range(n):
+        a = i * win
+        arrive, leave = (1.0 if i == 0 else a + 1), ((i + 1) * win - 3)
+        dy, k = cs[i] - cs[STATIC], (cs[i] - cs[0]) / L
+        tok.append(f"{f(arrive)}%{{opacity:1;transform:translateY({dy:.1f}px);{ease}}}")
+        rail.append(f"{f(arrive)}%{{transform:scaleY({k:.4f});{ease}}}")
+        if i < n - 1:
+            tok.append(f"{f(leave)}%{{opacity:1;transform:translateY({dy:.1f}px);{ease}}}")
+            rail.append(f"{f(leave)}%{{transform:scaleY({k:.4f});{ease}}}")
+    tok += [f"96%{{opacity:1;transform:translateY({cs[-1] - cs[STATIC]:.1f}px)}}",
+            f"99%,100%{{opacity:0;transform:translateY({cs[-1] - cs[STATIC]:.1f}px)}}"]
+    rail += ["96%{transform:scaleY(1);opacity:1}", "99%{transform:scaleY(1);opacity:0}",
+             "100%{transform:scaleY(0);opacity:0}"]
+    css.append("@keyframes wpTok{" + "".join(tok) + f"}}.wp-tok{{animation:wpTok {P}s infinite}}")
+    css.append("@keyframes wpRail{" + "".join(rail) + f"}}.wp-rail{{transform-box:fill-box;"
+               f"transform-origin:center top;animation:wpRail {P}s infinite}}")
+    end = n * win
+    css.append(f"@keyframes wpOk{{0%,{f(end + 1)}%{{opacity:0;transform:translateY(5px)}}"
+               f"{f(end + 2.5)}%,95%{{opacity:1;transform:none}}97.5%,100%{{opacity:0}}}}"
+               f".wp-ok{{animation:wpOk {P}s ease-out infinite}}")
+    s.extra_css += "".join(css)
+
+    s.add(f'<line x1="{railX}" y1="{cs[0]:.1f}" x2="{railX}" y2="{cs[-1]:.1f}" stroke="{wp["rail"]}" '
+          f'stroke-width="2" stroke-linecap="round"/>')
+    k2 = (cs[STATIC] - cs[0]) / L
+    s.add(f'<rect x="{railX - 1.5}" y="{cs[0]:.1f}" width="3" height="{L:.1f}" rx="1.5" fill="{acc}" '
+          f'class="wp-rail" transform="scale(1 {k2:.4f})"/>')  # origin: the class's top edge
+    for i, (name, _) in enumerate(WP_STEPS):
+        fill, stroke = ((done, acc) if i < STATIC else (acc, wp["cur_line"]) if i == STATIC else (base, line))
+        s.add(f'<line x1="{railX}" y1="{cs[i]:.1f}" x2="{bx}" y2="{cs[i]:.1f}" stroke="{wp["rail"]}" stroke-width="2"/>')
+        s.add(f'<circle cx="{railX}" cy="{cs[i]:.1f}" r="3.5" fill="{wp["rail"]}"/>')
+        s.add(f'<g class="wp-p{i}">')
+        s.add(f'<rect x="{bx}" y="{ys[i]:.1f}" width="{bw}" height="{boxh}" rx="10" fill="{fill}" '
+              f'stroke="{stroke}" stroke-width="1.5" class="wp-s{i}"/>')
+        s.text(bx + 18, cs[i] + 5, f"0{i + 1}", "M7", 13, wp["text"])
+        s.text(bx + 58, cs[i] + 5, name, "M7", 13, wp["text"], ls=0.06)
+        s.add("</g>")
+    s.add(f'<g class="wp-tok"><circle cx="{railX}" cy="{cs[STATIC]:.1f}" r="11" fill="{acc}" opacity=".22"/>'
+          f'<circle cx="{railX}" cy="{cs[STATIC]:.1f}" r="6.5" fill="{acc}" stroke="{wp["tok"]}" '
+          f'stroke-width="2"/></g>')
+    s.add(f'<line x1="36" y1="{capY - 30}" x2="{cw - 30}" y2="{capY - 30}" stroke="{wp["rail"]}" stroke-width="1.2"/>')
+    for i, (name, d) in enumerate(WP_STEPS):
+        op = "1" if i == STATIC else "0"
+        s.add(f'<g class="wp-c{i}" opacity="{op}">')
+        s.text(36, capY, f"TRACE 0{i + 1} · {name}", "M7", 12.5, wp["trace"], ls=0.08)
+        for k, ln in enumerate(wrap(d, "O4", 16, cw - 64)):
+            s.text(36, capY + 26 + k * 24, ln, "O4", 16, wp["text"])
+        s.add("</g>")
+    s.add('<g class="wp-ok" opacity="0">')
+    s.add(f'<circle cx="44" cy="{capY - 4.5}" r="8" fill="{wp["ok"]}"/>'
+          f'<path d="M40 {capY - 4.5} l3 3 l5.5 -6" fill="none" stroke="{wp["check"]}" stroke-width="2" '
+          f'stroke-linecap="round" stroke-linejoin="round"/>')
+    s.text(60, capY, "COMMITTED", "M7", 12.5, wp["ok_text"], ls=0.08)
+    for k, ln in enumerate(wrap("One audited, transactional write: it all landed together, or none of it did.",
+                                "O4", 16, cw - 64)):
+        s.text(36, capY + 26 + k * 24, ln, "O4", 16, wp["text"])
+    s.add("</g>")
+    finite_loops(s, 0.92)
+    s.needed_h = py + ph + 12
+
+
 def experience(s: Svg, t: dict):
     W, H = s.w, s.h
     s.box(3, 3, W - 14, H - 14, r=24, fill=t["card"], off=7)
@@ -1246,6 +1407,12 @@ def main() -> None:
          "server. Rule 03, prove it, then say what's missing. Every write in Grove HRMS takes one path: "
          "interface, server action, permission check, Zod validation, transaction, audit log, Postgres.",
          1200, 576)
+    probe = Svg(520, 4000, "", LIGHT)
+    principles_phone(probe, LIGHT)
+    save("principles-phone", principles_phone, "How I work. Rule 01, show the why. Rule 02, enforce it "
+         "on the server. Rule 03, prove it, then say what's missing. Every write in Grove HRMS takes one "
+         "path: interface, server action, permission check, Zod validation, transaction, audit log, "
+         "Postgres.", 520, int(probe.needed_h))
     save("experience", experience, "Experience: Business Analytics Intern at Maincrafts Technology, "
          "January to April 2026, remote. Data Science Intern at Zetpeak, October 2025 to January 2026, "
          "Bengaluru, where tested data-quality checks cut ingestion errors by 15%. Education: B.Tech in "
