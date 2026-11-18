@@ -1,5 +1,7 @@
 <a href="https://rrushikeshp89.github.io/motionfolio/">
   <picture>
+    <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/header-phone-dark.svg">
+    <source media="(max-width: 700px)" srcset="assets/header-phone-light.svg">
     <source media="(prefers-color-scheme: dark)" srcset="assets/header-dark.svg">
     <img src="assets/header-light.svg" width="100%" alt="Rushikesh Panchal, Software Developer in Bengaluru, India. I build software that can explain itself: full-stack TypeScript, server-side access control and explainable AI. Open to Software Developer roles.">
   </picture>
@@ -19,6 +21,8 @@ I came to software through data science, and I still think like an analyst: **if
 **Day to day:** TypeScript, React, Next.js, Node.js, PostgreSQL, Prisma, Python
 
 <picture>
+  <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/stats-phone-dark.svg">
+  <source media="(max-width: 700px)" srcset="assets/stats-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/stats-dark.svg">
   <img src="assets/stats-light.svg" width="100%" alt="8 public projects, 6 live sites, 130+ tests on Grove HRMS, and Lighthouse 100 in all four categories on Motionfolio.">
 </picture>
@@ -125,6 +129,8 @@ The LeadHub CRM holds a real team's data, so sign-in is by invitation; the publi
 ## Experience and education
 
 <picture>
+  <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/experience-phone-dark.svg">
+  <source media="(max-width: 700px)" srcset="assets/experience-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/experience-dark.svg">
   <img src="assets/experience-light.svg" width="100%" alt="Experience: Business Analytics Intern at Maincrafts Technology, January to April 2026, remote. Data Science Intern at Zetpeak, October 2025 to January 2026, Bengaluru, where tested data-quality checks cut ingestion errors by 15%. Education: B.Tech in Computer Science Engineering (Data Science), Garden City University, graduated July 2026, CGPA 8.53 of 10. Certifications: Google Gen AI Academy, McKinsey Forward Program, Google Data Analytics Professional Certificate.">
 </picture>
@@ -134,6 +140,8 @@ The LeadHub CRM holds a real team's data, so sign-in is by invitation; the publi
 ## Stack
 
 <picture>
+  <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/icons-phone-dark.svg">
+  <source media="(max-width: 700px)" srcset="assets/icons-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/icons-dark.svg">
   <img src="assets/icons-light.svg" width="100%" alt="TypeScript, React, Next.js, Node.js, Express, Python, FastAPI, PostgreSQL, SQLite, Prisma, Supabase, Tailwind CSS, Vite, Docker, GitHub Actions, Vercel, Figma, Git">
 </picture>
@@ -142,6 +150,8 @@ The LeadHub CRM holds a real team's data, so sign-in is by invitation; the publi
 
 <a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=rrushikeshp8%40gmail.com">
   <picture>
+    <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="assets/contact-phone-dark.svg">
+    <source media="(max-width: 700px)" srcset="assets/contact-phone-light.svg">
     <source media="(prefers-color-scheme: dark)" srcset="assets/contact-dark.svg">
     <img src="assets/contact-light.svg" width="100%" alt="Open to Software Developer roles in Bengaluru. Let's build something that can explain itself. Write to me at rrushikeshp8@gmail.com.">
   </picture>

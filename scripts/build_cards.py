@@ -1178,6 +1178,171 @@ def contact(s: Svg, t: dict):
           f'height="20" fill="{ink}" class="blink"/>')
 
 
+# ---------------------------------------------------------------------------- phone layouts
+
+def header_phone(s: Svg, t: dict):
+    """Phone header: the same springy name, set to fit 520 wide, with the whoami panel below."""
+    W, H = s.w, s.h
+    s.paths = True
+    s.box(3, 3, W - 14, H - 14, r=26, fill=t["paper"], off=8)
+    s.add(f'<clipPath id="hc"><rect x="5" y="5" width="{W - 18}" height="{H - 18}" rx="24"/></clipPath>')
+    s.add('<g clip-path="url(#hc)">')
+    dot_grid(s, 5, 5, W - 18, H - 18)
+    s.add("</g>")
+    x = 36
+    s.kicker(x, 62, "SOFTWARE DEVELOPER · BENGALURU, INDIA", size=12)
+    size = round(min(96, (W - 14 - 2 * x) / measure("RUSHIKESH", "O9", 100, -0.01) * 100), 1)
+    b1, b2 = 62 + size * 0.98 + 14, 62 + size * 1.86 + 14
+    s.extra_css += spring_keyframes("jelly")
+    s.add(f'<clipPath id="l1"><rect x="0" y="0" width="{W}" height="{b1 + 4:.0f}"/></clipPath>'
+          f'<clipPath id="l2"><rect x="0" y="{b1 + 4:.0f}" width="{W}" height="{b2 - b1:.0f}"/></clipPath>')
+    s.add('<g clip-path="url(#l1)">')
+    s.text(x - 4, b1, "RUSHIKESH", "O9", size, t["ink"], ls=-0.01, per_glyph=("jelly", 0.3, 0.045))
+    s.add('</g><g clip-path="url(#l2)">')
+    s.text(x - 4, b2, "PANCHAL", "O9", size, t["accent"], ls=-0.01, per_glyph=("jelly", 0.55, 0.045))
+    s.add("</g>")
+    y = b2 + 28
+    s.add(f'<rect x="{x}" y="{y:.0f}" width="{W - 14 - 2 * x}" height="2.5" fill="{t["rule"]}" class="grow" '
+          f'style="animation-delay:.8s"/>')
+    s.text(x, y + 38, "I build software that can explain itself.", "O7", 21, t["ink"], cls="show",
+           style="animation-delay:.95s")
+    for k, ln in enumerate(wrap("Full-stack TypeScript · server-side access control · explainable AI",
+                                "O4", 17.5, W - 14 - 2 * x)):
+        s.text(x, y + 70 + k * 25, ln, "O4", 17.5, t["muted"], cls="show", style="animation-delay:1.05s")
+    px, py, pw_, ph = 40, y + 128, W - 14 - 80 + 6, 300
+    s.add(f'<g transform="rotate(-1.6 {px + pw_ / 2} {py + ph / 2})"><g class="lift" style="animation-delay:.7s">')
+    s.box(px, py, pw_, ph, r=18, fill=t["card"], off=7)
+    s.add(f'<line x1="{px}" y1="{py + 46}" x2="{px + pw_}" y2="{py + 46}" stroke="{t["rule"]}" stroke-width="2"/>')
+    for i, c in enumerate([t["accent"], t["sand"], t["sage"]]):
+        s.add(f'<circle cx="{px + 24 + i * 18}" cy="{py + 23}" r="5.5" fill="{c}" stroke="{t["rule"]}" stroke-width="1.5"/>')
+    s.text(px + pw_ - 20, py + 28, "whoami.ts", "M7", 13, t["faint"], anchor="end", ls=0.04)
+    rows = [("role", "Software Developer"), ("stack", "Next.js · Node · Postgres"),
+            ("focus", "RBAC · integrity · XAI"), ("degree", "B.Tech CSE (Data Sci.)"),
+            ("tests", "unit · e2e · axe")]
+    for i, (k, v) in enumerate(rows):
+        yy = py + 86 + i * 36
+        s.text(px + 24, yy, k, "M4", 15, t["accent_text"])
+        s.text(px + 108, yy, v, "M4", 15, t["ink"])
+    yy = py + 86 + 5 * 36 + 8
+    s.add(f'<rect x="{px + 20}" y="{yy - 22}" width="{pw_ - 40}" height="34" rx="17" '
+          f'fill="{t["sage_soft"]}" stroke="{t["rule"]}" stroke-width="1.5"/>')
+    s.add(f'<circle cx="{px + 40}" cy="{yy - 5}" r="5" fill="{t["ok"]}"/>')
+    s.add(f'<circle cx="{px + 40}" cy="{yy - 5}" r="5" fill="{t["ok"]}" class="beacon"/>')
+    s.text(px + 54, yy, "OPEN TO SOFTWARE DEVELOPER ROLES", "M7", 11.5,
+           t["sage_text"] if t["name"] == "light" else t["ok"], ls=0.06)
+    s.add("</g></g>")
+    s.needed_h = py + ph + 40
+
+
+def stats_phone(s: Svg, t: dict):
+    """The four stats as a 2 x 2 grid."""
+    items = [("8", "PUBLIC PROJECTS"), ("6", "LIVE SITES"), ("130+", "TESTS ON GROVE"),
+             ("100×4", "LIGHTHOUSE ·", "MOTIONFOLIO")]
+    gap = 18
+    w, h = (s.w - 14 - gap) / 2, 150
+    for i, it in enumerate(items):
+        n, lab = it[0], it[1:]
+        x, y = 3 + (i % 2) * (w + gap), 3 + (i // 2) * (h + gap)
+        fill = t["accent_soft"] if i == 3 else t["card"]
+        s.box(x, y, w, h, r=18, fill=fill, off=6, cls="fade", style=f"animation-delay:{i * .08:.2f}s")
+        s.text(x + 24, y + 70, n, "O8", 52, t["accent"] if i == 3 else t["ink"], cls="fade",
+               style=f"animation-delay:{i * .08:.2f}s")
+        s.add(f'<rect x="{x + 24}" y="{y + 86}" width="44" height="4" rx="2" fill="{t["accent"]}" '
+              f'class="grow" style="animation-delay:{.3 + i * .08:.2f}s"/>')
+        for k, ln in enumerate(lab):
+            s.text(x + 24, y + 116 + k * 18, ln, "M7", 12.5, t["muted"], ls=0.08)
+
+
+def experience_phone(s: Svg, t: dict):
+    """Experience, then education and certifications, in one column."""
+    W = s.w
+    x, tw = 36, W - 14 - 72
+    jobs = [
+        ("JAN 2026 – APR 2026 · REMOTE", "Business Analytics Intern", "Maincrafts Technology",
+         "Interactive Power BI dashboards (DAX, Power Query) and table relationships so "
+         "stakeholders can answer KPI questions themselves."),
+        ("OCT 2025 – JAN 2026 · BENGALURU", "Data Science Intern", "Zetpeak",
+         "Tested Python and SQL data-quality checks on ingestion pipelines cut ingestion-level "
+         "errors by 15%; regression and K-means models surfaced patterns in company data."),
+    ]
+    body = []          # draw after the box, once its height is known
+    y = 58
+    body.append(lambda: s.kicker(x, 58, "EXPERIENCE", size=12.5))
+    y += 46
+    for i, (when, role, org, what) in enumerate(jobs):
+        yy = y
+        lines = wrap(what, "O4", 16.5, tw - 24)
+        def draw(yy=yy, when=when, role=role, org=org, lines=lines, last=(i == len(jobs) - 1)):
+            s.add(f'<circle cx="{x + 6}" cy="{yy - 5}" r="6" fill="{t["card"]}" stroke="{t["accent"]}" stroke-width="2.5"/>')
+            s.text(x + 24, yy, when, "M7", 12, t["accent_text"], ls=0.06)
+            s.text(x + 24, yy + 34, role, "O8", 24, t["ink"], ls=-0.01)
+            s.text(x + 24, yy + 60, org, "O4", 18, t["muted"])
+            for k, ln in enumerate(lines):
+                s.text(x + 24, yy + 90 + k * 24, ln, "O4", 16.5, t["muted"])
+        body.append(draw)
+        step = 90 + (len(lines) - 1) * 24 + 44
+        if i == 0:
+            body.append(lambda yy=yy, step=step: s.add(
+                f'<line x1="{x + 6}" y1="{yy + 3}" x2="{x + 6}" y2="{yy + step - 12}" stroke="{t["hair"]}" stroke-width="2"/>'))
+        y += step
+    y += 6
+    hy = y
+    body.append(lambda: s.add(f'<line x1="{x}" y1="{hy}" x2="{W - 14 - x}" y2="{hy}" stroke="{t["hair"]}" stroke-width="2"/>'))
+    y += 46
+    ey = y
+    def edu():
+        s.kicker(x, ey, "EDUCATION", size=12.5)
+        s.text(x, ey + 46, "B.Tech, Computer Science", "O8", 25, t["ink"], ls=-0.01)
+        s.text(x, ey + 76, "Engineering (Data Science)", "O8", 25, t["ink"], ls=-0.01)
+        s.text(x, ey + 106, "Garden City University, Bengaluru · 2026", "O4", 17, t["muted"])
+        s.box(x, ey + 126, 176, 72, r=12, fill=t["accent_soft"], off=4)
+        s.text(x + 18, ey + 175, "8.53", "O8", 40, t["accent"])
+        s.text(x + 112, ey + 166, "CGPA", "M7", 12, t["ink"], ls=0.08)
+        s.text(x + 112, ey + 183, "/ 10", "M4", 12, t["faint"])
+        s.text(x + 202, ey + 158, "Graduated", "M7", 12, t["faint"], ls=0.08)
+        s.text(x + 202, ey + 180, "JULY 2026", "M7", 14, t["ink"], ls=0.08)
+        s.kicker(x, ey + 248, "CERTIFICATIONS", dot=False, size=12.5)
+        yy = ey + 266
+        for c in ["GOOGLE GEN AI ACADEMY", "MCKINSEY FORWARD PROGRAM", "GOOGLE DATA ANALYTICS (PROFESSIONAL)"]:
+            s.pill(x, yy, c, size=12, h=28, ls=0.05, fill=t["paper"])
+            yy += 38
+    body.append(edu)
+    total = ey + 266 + 3 * 38 + 30
+    s.box(3, 3, W - 14, total - 3, r=24, fill=t["card"], off=7)
+    for f in body:
+        f()
+    s.needed_h = total + 14
+
+
+def contact_phone(s: Svg, t: dict):
+    """The orange contact card, stacked: kicker, headline, then the email box."""
+    W, H = s.w, s.h
+    ink = "#1C1917"
+    s.box(3, 3, W - 14, H - 14, r=24, fill=t["accent"], off=8)
+    s.text(36, 58, "● OPEN TO SOFTWARE DEVELOPER ROLES", "M7", 12.5, ink, ls=0.1)
+    s.text(36, 80, "BENGALURU", "M7", 12.5, ink, ls=0.1)
+    for k, (ln, col) in enumerate([("Let's build", ink), ("something that", ink),
+                                   ("can explain", "#FFFDF8"), ("itself.", "#FFFDF8")]):
+        s.text(34, 140 + k * 54, ln, "O9", 52, col, ls=-0.02)
+    bx, by, bw = 36, 140 + 3 * 54 + 40, W - 14 - 72
+    s.add(f'<rect x="{bx + 5}" y="{by + 5}" width="{bw}" height="96" rx="16" fill="{ink}"/>')
+    s.add(f'<rect x="{bx}" y="{by}" width="{bw}" height="96" rx="16" fill="#FFFDF8" stroke="{ink}" stroke-width="2.5"/>')
+    s.text(bx + 22, by + 36, "WRITE TO ME · TAP TO EMAIL", "M7", 12, "#B23F1C", ls=0.1)
+    s.add(f'<rect x="{bx + bw - 50}" y="{by + 18}" width="30" height="30" rx="8" fill="#E05A36" stroke="{ink}" stroke-width="2"/>')
+    s.text(bx + bw - 35, by + 38, "↗", "M7", 15, ink, anchor="middle")
+    s.text(bx + 22, by + 72, "rrushikeshp8@gmail.com", "M7", 20, ink)
+    s.add(f'<rect x="{bx + 22 + measure("rrushikeshp8@gmail.com", "M7", 20) + 4}" y="{by + 55}" width="10" '
+          f'height="21" fill="{ink}" class="blink"/>')
+    s.needed_h = by + 96 + 44
+
+
+def save_sized(name: str, build, label: str, w: int) -> None:
+    """Save a layout whose height comes from its content (the builder sets needed_h)."""
+    probe = Svg(w, 4000, "", LIGHT)
+    build(probe, LIGHT)
+    save(name, build, label, w, int(probe.needed_h))
+
+
 # ---------------------------------------------------------------------------- icon grid
 
 ICONS = [  # (simple-icons slug, label, brand colour)
@@ -1212,15 +1377,17 @@ def contrast(a: str, b: str) -> float:
     return (la + 0.05) / (lb + 0.05)
 
 
-def icons(s: Svg, t: dict):
+def icons(s: Svg, t: dict, per_row: int = 9, tile: int = 100, glyph: int = 50, row_h: int = 168,
+          label: float = 14):
     """Stack logos in the card style: one flat SVG with a viewBox, so it scales on every
     screen (the external skill-icons strip showed one giant icon in the GitHub app)."""
-    per_row, slot = 9, (s.w - 14) / 9
-    tile, glyph = 100, 50
-    for i, (slug, label, colour) in enumerate(ICONS):
+    slot = (s.w - 14) / per_row
+    lab_size = label
+    for i, (slug, name, colour) in enumerate(ICONS):
         row, col = divmod(i, per_row)
-        cx = 3 + col * slot + slot / 2
-        y = 3 + row * 168
+        in_row = min(per_row, len(ICONS) - row * per_row)        # centre a short last row
+        cx = 3 + (s.w - 14 - in_row * slot) / 2 + col * slot + slot / 2
+        y = 3 + row * row_h
         x = cx - tile / 2
         c = colour if contrast(colour, t["card"]) >= 2.6 else t["ink"]
         s.add(f'<g class="show" style="animation-delay:{i * 0.03:.2f}s">')
@@ -1228,7 +1395,7 @@ def icons(s: Svg, t: dict):
         k = glyph / 24
         s.add(f'<path d="{ICON_PATHS[slug]}" fill="{c}" '
               f'transform="translate({cx - glyph / 2:.1f} {y + (tile - glyph) / 2:.1f}) scale({k:.4f})"/>')
-        s.text(cx, y + tile + 32, label.upper(), "M7", 14, t["ink"], anchor="middle", ls=0.06)
+        s.text(cx, y + tile + 32, name.upper(), "M7", lab_size, t["ink"], anchor="middle", ls=0.06)
         s.add("</g>")
 
 
@@ -1316,8 +1483,13 @@ def main() -> None:
     save("header", header, "Rushikesh Panchal, Software Developer in Bengaluru, India. I build software "
          "that can explain itself: full-stack TypeScript, server-side access control and explainable AI. "
          "Open to Software Developer roles.", 1200, 420)
+    save_sized("header-phone", header_phone, "Rushikesh Panchal, Software Developer in Bengaluru, India. "
+               "I build software that can explain itself: full-stack TypeScript, server-side access control "
+               "and explainable AI. Open to Software Developer roles.", 520)
     save("stats", stats, "8 public projects, 6 live sites, 130+ tests on Grove HRMS, and Lighthouse "
          "100 in all four categories on Motionfolio.", 1200, 160)
+    save("stats-phone", stats_phone, "8 public projects, 6 live sites, 130+ tests on Grove HRMS, and "
+         "Lighthouse 100 in all four categories on Motionfolio.", 520, 3 + 150 * 2 + 18 + 14)
     mf_label = ("Motionfolio, my animated portfolio, new in November 2026: Lighthouse mobile 100 in all "
                 "four categories, 147.2 kB of JavaScript, 113 tests, no third-party requests. Live at "
                 "rrushikeshp89.github.io/motionfolio.")
@@ -1419,12 +1591,22 @@ def main() -> None:
          "Computer Science Engineering (Data Science), Garden City University, graduated July 2026, "
          "CGPA 8.53 of 10. Certifications: Google Gen AI Academy, McKinsey Forward Program, Google Data "
          "Analytics Professional Certificate.", 1200, 456)
+    save_sized("experience-phone", experience_phone, "Experience: Business Analytics Intern at Maincrafts "
+               "Technology, January to April 2026, remote. Data Science Intern at Zetpeak, October 2025 to "
+               "January 2026, Bengaluru, where tested data-quality checks cut ingestion errors by 15%. "
+               "Education: B.Tech in Computer Science Engineering (Data Science), Garden City University, "
+               "graduated July 2026, CGPA 8.53 of 10. Certifications: Google Gen AI Academy, McKinsey Forward "
+               "Program, Google Data Analytics Professional Certificate.", 520)
     save("icons", icons, "Stack logos: " + ", ".join(lab for _, lab, _ in ICONS) + ".", 1200, 330)
+    save("icons-phone", lambda s, t: icons(s, t, per_row=5, tile=78, glyph=40, row_h=136, label=12),
+         "Stack logos: " + ", ".join(lab for _, lab, _ in ICONS) + ".", 520, 4 * 136 - 20)
     for name, label, tile, ic, icon, chip in BUTTONS:
         save(f"btn-{name}", lambda s, t, a=(label, tile, ic, icon, chip): button(s, t, *a),
              label, button_width(label, chip), 48)
     save("contact", contact,"Open to Software Developer roles in Bengaluru. Let's build something that "
          "can explain itself. Write to me at rrushikeshp8@gmail.com.", 1200, 250)
+    save_sized("contact-phone", contact_phone, "Open to Software Developer roles in Bengaluru. Let's build "
+               "something that can explain itself. Write to me at rrushikeshp8@gmail.com.", 520)
 
 
 if __name__ == "__main__":
