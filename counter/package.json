@@ -1,0 +1,13 @@
+{
+  "name": "profile-views",
+  "private": true,
+  "type": "module",
+  "description": "Profile views counter for the GitHub profile README, drawn in the README's card style.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.161.0"
+  }
+}

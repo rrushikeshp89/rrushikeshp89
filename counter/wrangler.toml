@@ -1,0 +1,12 @@
+name = "profile-views"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[[durable_objects.bindings]]
+name = "COUNTER"
+class_name = "ViewCounter"
+
+# SQLite-backed Durable Objects are available on the Workers Free plan.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ViewCounter"]
